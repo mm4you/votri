@@ -268,10 +268,14 @@ export function createBirdPhysics() {
 
     step(dt, pressedFlags) {
       if (state.fallen) return;
-      accumulator += dt;
-      while (accumulator >= 1 / 240 && !state.fallen) {
-        stepFixed(1 / 240, pressedFlags);
-        accumulator -= 1 / 240;
+      // Khóa trần accumulator ở 0.05s và giới hạn tối đa 5 bước lặp/khung hình để chống đơ máy/treo CPU
+      accumulator = Math.min(accumulator + dt, 0.05);
+      const STEP = 1 / 120;
+      let count = 0;
+      while (accumulator >= STEP && !state.fallen && count < 5) {
+        stepFixed(STEP, pressedFlags);
+        accumulator -= STEP;
+        count++;
       }
     },
 

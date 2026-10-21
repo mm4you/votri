@@ -8,7 +8,7 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { GAME_CONFIG } from './config.js?v=16';
+import { GAME_CONFIG } from './config.js?v=17';
 
 const rand = (min, max) => min + Math.random() * (max - min);
 
@@ -301,6 +301,99 @@ export function createPoolScene(scene) {
   createGate(50, '50m HALFWAY', '#f59e0b');
   createGate(Z, `GOAL ${Z}m`, '#e11d48');
 
+  // 6b. CHƯỚNG NGẠI VẬT & ĐẠO CỤ HÀI HƯỚC TRÊN LÀN BƠI 100M
+  // 1. Phao Vịt Vàng Khổng Lồ ở 22m (Giant Rubber Duck Floatie)
+  const duckGroup = new THREE.Group();
+  duckGroup.position.set(22.0, 0.02, 0.25);
+  const duckYellowMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.35 });
+  const duckOrangeMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.3 });
+  const duckBlackMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.1 });
+  const duckWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
+
+  const duckBody = new THREE.Mesh(new THREE.SphereGeometry(0.32, 20, 16), duckYellowMat);
+  duckBody.scale.set(1.25, 0.9, 1.1);
+  duckGroup.add(duckBody);
+
+  const duckHead = new THREE.Mesh(new THREE.SphereGeometry(0.20, 18, 14), duckYellowMat);
+  duckHead.position.set(-0.22, 0.22, 0);
+  duckGroup.add(duckHead);
+
+  const duckBeak = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.045, 0.08, 0.16, 12).rotateZ(Math.PI / 2),
+    duckOrangeMat
+  );
+  duckBeak.scale.set(0.6, 0.3, 1.0);
+  duckBeak.position.set(-0.36, 0.20, 0);
+  duckGroup.add(duckBeak);
+
+  for (const eyeZ of [-0.09, 0.09]) {
+    const dEye = new THREE.Mesh(new THREE.SphereGeometry(0.042, 10, 8), duckWhiteMat);
+    dEye.position.set(-0.25, 0.28, eyeZ);
+    const dPupil = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 8), duckBlackMat);
+    dPupil.position.set(-0.28, 0.29, eyeZ);
+    duckGroup.add(dEye);
+    duckGroup.add(dPupil);
+  }
+
+  const duckTail = new THREE.Mesh(
+    new THREE.ConeGeometry(0.09, 0.18, 10).rotateZ(-Math.PI / 3),
+    duckYellowMat
+  );
+  duckTail.position.set(0.30, 0.14, 0);
+  duckGroup.add(duckTail);
+  scene.add(duckGroup);
+
+  // 2. Vòng Xoáy Nước Tăng Tốc Phun Bọt ở 45m (Turbo Bubble Jet Ring)
+  const turboGroup = new THREE.Group();
+  turboGroup.position.set(45.0, -0.22, 0);
+  const turboMat = new THREE.MeshStandardMaterial({
+    color: 0x06b6d4,
+    emissive: 0x0891b2,
+    emissiveIntensity: 0.75,
+    roughness: 0.2,
+  });
+  const turboRing = new THREE.Mesh(
+    new THREE.TorusGeometry(0.72, 0.08, 16, 32).rotateY(Math.PI / 2),
+    turboMat
+  );
+  turboGroup.add(turboRing);
+
+  const turboInnerMat = new THREE.MeshBasicMaterial({
+    color: 0x67e8f9,
+    wireframe: true,
+  });
+  const turboInner = new THREE.Mesh(
+    new THREE.TorusGeometry(0.55, 0.04, 12, 24).rotateY(Math.PI / 2),
+    turboInnerMat
+  );
+  turboGroup.add(turboInner);
+
+  const turboSign = makeBannerMesh('TURBO SPEED >>', 2.0, 0.42, '#0891b2', '#ffffff');
+  turboSign.position.set(0, 1.85, 0);
+  turboSign.rotation.y = -Math.PI / 2;
+  turboGroup.add(turboSign);
+  scene.add(turboGroup);
+
+  // 3. Phao Cứu Sinh Tròn Xoay ở 70m (Lifebuoy Ring)
+  const lifebuoyGroup = new THREE.Group();
+  lifebuoyGroup.position.set(70.0, -0.02, -0.25);
+  const buoyTorus = new THREE.Mesh(
+    new THREE.TorusGeometry(0.42, 0.12, 16, 28).rotateX(Math.PI / 2),
+    new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.35 })
+  );
+  lifebuoyGroup.add(buoyTorus);
+  for (let a = 0; a < 4; a++) {
+    const stripe = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.128, 0.128, 0.16, 12),
+      duckWhiteMat
+    );
+    const angle = a * (Math.PI / 2);
+    stripe.position.set(Math.cos(angle) * 0.42, 0, Math.sin(angle) * 0.42);
+    stripe.rotation.y = -angle;
+    lifebuoyGroup.add(stripe);
+  }
+  scene.add(lifebuoyGroup);
+
   // 7. Hạt Bọt Nước Trắng (Splash Foam) & Bong Bóng (Bubbles)
   const createSplashTex = () => {
     const c = document.createElement('canvas');
@@ -369,7 +462,30 @@ export function createPoolScene(scene) {
       this.spawnSplash(x, z, Math.min(1, count * 0.22));
     },
 
+    bonkDuck() {
+      duckGroup.rotation.y += 2.4;
+      duckGroup.position.y += 0.16;
+    },
+
+    triggerTurbo() {
+      turboRing.scale.set(1.35, 1.35, 1.35);
+      setTimeout(() => {
+        turboRing.scale.set(1, 1, 1);
+      }, 320);
+    },
+
     update(dt, timeSec, swimmerX, swimmerZ = 0) {
+      // Nhấp nhô bập bềnh phao vịt vàng và đạo cụ
+      duckGroup.position.y = 0.02 + Math.sin(timeSec * 2.8) * 0.035;
+      duckGroup.rotation.z = Math.sin(timeSec * 2.2) * 0.08;
+      duckGroup.rotation.y = Math.sin(timeSec * 1.5) * 0.12;
+
+      turboInner.rotation.x = timeSec * 4.2;
+      turboRing.rotation.x = -timeSec * 2.0;
+
+      lifebuoyGroup.position.y = -0.02 + Math.cos(timeSec * 3.0) * 0.03;
+      lifebuoyGroup.rotation.y = timeSec * 0.8;
+
       // Chuyển động vân nắng Caustics lung linh dưới đáy hồ và trên mặt nước
       causticsTex.offset.x = (timeSec * 0.08) % 1;
       causticsTex.offset.y = Math.sin(timeSec * 0.5) * 0.15;
@@ -383,18 +499,9 @@ export function createPoolScene(scene) {
         bodyRippleTimer = 0.32;
       }
 
-      const posAttr = waterGeo.attributes.position;
-      for (let i = 0; i < posAttr.count; i++) {
-        const wx = posAttr.getX(i) + Z / 2;
-        const wz = posAttr.getZ(i);
-        const dist = Math.abs(wx - swimmerX);
-        const wake = Math.max(0, 1 - dist / 3.5) * 0.038;
-        const waveY =
-          Math.sin(wx * 2.2 - timeSec * 4.0 + wz * 1.6) * 0.014 +
-          Math.cos(wx * 4.5 - timeSec * 6.8) * wake;
-        posAttr.setY(i, waveY);
-      }
-      posAttr.needsUpdate = true;
+      // Hiệu ứng sóng nước mượt mà qua texture offset GPU, không tính toán vertex buffer trên CPU để máy luôn mượt 60fps
+      surfaceTex.offset.x = (-timeSec * 0.09) % 1;
+      surfaceTex.offset.y = Math.cos(timeSec * 0.6) * 0.08;
 
       for (const r of ripples) {
         if (!r.mesh.visible) continue;

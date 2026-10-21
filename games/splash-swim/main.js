@@ -8,14 +8,14 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { GAME_CONFIG, LIMBS, RANKS, SKINS, SWIM_STYLES } from './config.js?v=16';
-import { createSwimPhysics } from './physics.js?v=16';
-import { createSwimmerModel } from './swimmerModel.js?v=16';
-import { createPoolScene } from './poolScene.js?v=16';
-import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=16';
-import { createGameCache } from '../../shared/storage/portalCache.js?v=16';
-import { GAMES } from '../../shared/ui/gameRegistry.js?v=16';
-import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=16';
+import { GAME_CONFIG, LIMBS, RANKS, SKINS, SWIM_STYLES } from './config.js?v=17';
+import { createSwimPhysics } from './physics.js?v=17';
+import { createSwimmerModel } from './swimmerModel.js?v=17';
+import { createPoolScene } from './poolScene.js?v=17';
+import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=17';
+import { createGameCache } from '../../shared/storage/portalCache.js?v=17';
+import { GAMES } from '../../shared/ui/gameRegistry.js?v=17';
+import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=17';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -712,6 +712,27 @@ function processPhysicsEvents() {
       showHint('roll', 1.4);
     } else if (ev.type === 'inhale') {
       synth.breathInhale();
+    } else if (ev.type === 'duckBonk') {
+      synth.duckSqueak();
+      pool.bonkDuck();
+      pool.spawnSplash(ev.x, ev.z, 1.2);
+      if (ui.stampFallVi) ui.stampFallVi.textContent = 'ĐỤNG VỊT VÀNG!!';
+      if (ui.stampFallEn) ui.stampFallEn.textContent = 'RUBBER DUCK!!';
+      triggerStamp(ui.stampFall);
+    } else if (ev.type === 'turboBoost') {
+      synth.turboBoost();
+      pool.triggerTurbo();
+      pool.spawnSplash(ev.x, ev.z, 1.4);
+      if (ui.stampGoalVi) ui.stampGoalVi.textContent = 'TĂNG TỐC VÔ TRI!!';
+      if (ui.stampGoalEn) ui.stampGoalEn.textContent = 'TURBO SPEED!!';
+      triggerStamp(ui.stampGoal);
+    } else if (ev.type === 'lifebuoyBonk') {
+      synth.strokeSplash({ power: 1.0, front: true });
+      synth.slipWarning();
+      pool.spawnSplash(ev.x, ev.z, 1.1);
+      if (ui.stampFallVi) ui.stampFallVi.textContent = 'MẮC PHAO!!';
+      if (ui.stampFallEn) ui.stampFallEn.textContent = 'LIFEBUOY!!';
+      triggerStamp(ui.stampFall);
     }
   }
   s.events.length = 0;
@@ -766,7 +787,7 @@ function updateGhostPose(timeSec) {
 let lastTimeMs = 0;
 
 renderer.setAnimationLoop((nowMs) => {
-  const dt = lastTimeMs ? Math.min((nowMs - lastTimeMs) / 1000, 0.1) : 0;
+  const dt = lastTimeMs ? Math.min((nowMs - lastTimeMs) / 1000, 0.05) : 0;
   lastTimeMs = nowMs;
   const timeSec = nowMs / 1000;
 

@@ -497,7 +497,7 @@ function updateCamera(dt) {
 let lastTimeMs = 0;
 
 renderer.setAnimationLoop((nowMs) => {
-  const dt = lastTimeMs ? Math.min((nowMs - lastTimeMs) / 1000, 0.1) : 0;
+  const dt = lastTimeMs ? Math.min((nowMs - lastTimeMs) / 1000, 0.05) : 0;
   lastTimeMs = nowMs;
   const timeSec = nowMs / 1000;
 
