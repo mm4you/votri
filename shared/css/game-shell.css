@@ -80,20 +80,21 @@ html[lang="en"] .t-vi { display: none !important; }
 
 /* Header Bar */
 .game-bar {
-  display: grid;
-  grid-template-columns: 1fr minmax(0, auto) 1fr;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  height: calc(54px + env(safe-area-inset-top));
+  gap: 10px;
+  height: calc(50px + env(safe-area-inset-top));
   padding: env(safe-area-inset-top) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.92);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   backdrop-filter: blur(14px) saturate(140%);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   font-family: var(--font-mono);
   font-size: 13px;
   position: relative;
-  z-index: 3;
+  z-index: 10;
+  white-space: nowrap;
 }
 
 .game-bar__cam {
@@ -110,6 +111,8 @@ html[lang="en"] .t-vi { display: none !important; }
   gap: 7px;
   height: 34px;
   padding: 0 12px;
+  white-space: nowrap !important;
+  flex-shrink: 0;
   background: #fff;
   border: 1px solid var(--line-4);
   border-radius: var(--r-tag);
@@ -605,15 +608,21 @@ html[lang="en"] .lang__btn[data-lang="en"] {
 }
 
 .game-btn__key {
-  position: absolute;
-  top: 7px;
-  right: 14px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 800;
-  background: rgba(0, 0, 0, 0.22);
-  padding: 1px 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 6px;
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.14);
   border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  margin-top: 3px;
 }
 
 .game-btn:active,
@@ -911,90 +920,121 @@ html[lang="en"] .lang__btn[data-lang="en"] {
 }
 
 @media (max-width: 768px) {
+  .game-btn__key { display: none !important; }
   .game {
     height: 100dvh;
     min-height: 100dvh;
   }
   .game-bar {
-    height: 42px;
-    padding: 0 10px;
-    background: rgba(255, 255, 255, 0.88);
+    height: 40px;
+    padding: 0 8px;
+    background: rgba(255, 255, 255, 0.90);
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
   }
   .game-bar__title {
-    font-size: 13px;
+    display: none !important;
   }
   .game-bar__menu,
   .game-bar__cam,
   .lang__btn {
-    height: 30px;
-    padding: 0 8px;
+    height: 28px;
+    padding: 0 7px;
     font-size: 11px;
   }
+  /* Giao diện HUD trên mobile thu gọn thành 1 hàng ngang duy nhất cực thoáng */
   .hud {
-    grid-template-columns: 1fr;
-    gap: 4px;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 8px;
     padding: 6px 10px 0;
   }
   .hud__left {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    gap: 6px;
+    display: contents;
+  }
+  /* Ẩn bộ nút chọn kiểu bơi cồng kềnh khi đang bơi trên màn hình điện thoại */
+  [data-hud-style-picker] {
+    display: none !important;
   }
   .hud__side {
     min-width: auto;
     padding: 4px 8px;
     border-radius: 10px;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .hud__name {
+    font-size: 11px;
+  }
+  .hud__score {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+  .hud__score .hud__label {
+    display: none;
+  }
+  .hud__pts {
+    font-size: 16px;
+    font-weight: 900;
+  }
+  .hud__unit {
+    font-size: 10px;
   }
   .hud__breath-card {
     min-width: auto;
     max-width: none;
-    flex: 1;
     padding: 4px 8px;
     border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
   .hud__breath-head {
-    margin-bottom: 2px;
+    display: none;
   }
   .hud__breath-card .meter {
-    height: 7px;
+    height: 8px;
+    border-radius: 4px;
   }
   .hud__pair {
     display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-top: 2px;
+    gap: 4px;
+    margin: 0;
   }
   .hud__timer {
     min-width: auto;
-    padding: 3px 8px;
-    border-radius: 10px;
+    padding: 3px 6px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .hud__timer .hud__label {
+    display: none;
   }
   .hud__time {
-    font-size: 18px;
+    font-size: 15px;
   }
+  /* Nút bấm điều khiển nổi ở chân màn hình, giữa màn hình hoàn toàn mở rộng */
   .game-pad {
-    padding: 6px 8px calc(10px + env(safe-area-inset-bottom));
-    background: linear-gradient(180deg, transparent 0%, rgba(6, 25, 48, 0.65) 100%);
+    padding: 6px 8px calc(8px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, transparent 0%, rgba(6, 25, 48, 0.60) 100%);
     gap: 6px;
   }
   .game-pad--4 {
     gap: 5px;
   }
   .game-btn {
-    height: 60px;
+    height: 56px;
     border-radius: 14px;
     padding: 0 2px;
-    font-size: 13px;
-    box-shadow: 0 4px 0 color-mix(in oklch, var(--c), #000 32%), 0 8px 16px rgba(0, 0, 0, 0.25);
+    font-size: 12.5px;
+    box-shadow: 0 4px 0 color-mix(in oklch, var(--c), #000 32%), 0 6px 14px rgba(0, 0, 0, 0.22);
   }
   .game-btn span {
-    font-size: 12.5px;
+    font-size: 12px;
   }
   .game-btn small {
-    font-size: 9.5px;
+    font-size: 9px;
     opacity: 0.85;
   }
   .game-btn__key {
@@ -1030,6 +1070,8 @@ html[lang="en"] .lang__btn[data-lang="en"] {
   gap: 8px;
   height: 34px;
   padding: 0 12px;
+  white-space: nowrap !important;
+  flex-shrink: 0;
   background: #fff;
   border: 1px solid var(--line-4);
   border-radius: var(--r-tag);
@@ -1227,4 +1269,69 @@ html[lang="en"] .lang__btn[data-lang="en"] {
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.05em;
+}
+
+@media (max-width: 768px) {
+  .game-btn__key { display: none !important; }
+  .game-bar {
+    height: 42px !important;
+    padding: 0 10px !important;
+    gap: 8px !important;
+  }
+  .game-bar__title {
+    display: none !important;
+  }
+  .game-bar__menu span:not(.game-bar__burger),
+  .game-bar__cam [data-cam-vi],
+  .game-bar__cam [data-cam-en] {
+    display: none !important;
+  }
+  .game-bar__menu,
+  .game-bar__cam {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: var(--r-tag) !important;
+    min-width: 32px !important;
+  }
+  .game-bar__end {
+    gap: 6px !important;
+  }
+  .game-bar__mute {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+  }
+}
+
+/* 3-Button Layout for Wobbly Bird with Emergency Egg Rocket */
+.game-pad--bird {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
+  gap: 10px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.game-btn--egg {
+  border-color: rgba(234, 179, 8, 0.45) !important;
+  background: linear-gradient(180deg, #fffdf0 0%, #fef3c7 100%) !important;
+  box-shadow: 0 4px 16px rgba(234, 179, 8, 0.20) !important;
+}
+.game-btn--egg:hover {
+  border-color: #eab308 !important;
+  background: #fef08a !important;
+}
+.game-btn--egg:active {
+  transform: translateY(2px) scale(0.97) !important;
+}
+@media (max-width: 680px) {
+  .game-pad--bird {
+    gap: 6px;
+    padding: 0 6px 6px;
+  }
+  .game-btn--egg {
+    font-size: 11px;
+  }
 }

@@ -1,13 +1,19 @@
 /**
  * @file physics.js
- * @description Bộ giải vật lý Bơi 240Hz — Cân bằng tốc độ chuẩn xác:
- * - Tốc độ bơi tối đa được khống chế ở mức thể thao thực tế: ~1.8 - 2.6 m/s (chạy nước rút ~3.0 m/s).
- *   Hoàn thành 100m mất khoảng 38s - 55s tùy nhịp điệu (không còn hiện tượng phóng vèo 1 phát về đích).
- * - Lực cản nước (Drag) tỉ lệ thực tế theo lực đẩy, giữ độ lướt nước đằm tay và tự nhiên.
- * - Cơ chế thở tự nhiên theo chu kỳ sải tay, lượng O2 cân bằng chuẩn xác.
+ * @description Bộ giải vật lý Bơi lội Thủy động lực học 120Hz — Cực kỳ cuốn hút & Đã tay:
+ * 1. Thủy động lực sải tay (Catch & Pull Thrust):
+ *    - Quạt tay (O, P) vươn bắt nước và kéo mạnh về sau tạo phản lực tiến vọt ~2.2 - 2.8 m/s.
+ *    - Đạp chân (Q, W) duy trì trớn lướt nước và giữ hông nổi cao.
+ *    - Nhịp bơi so le (Trái - Phải - Trái - Phải) kích hoạt "Nhịp Thủy Động", bơi nhanh và lướt mượt mà!
+ * 2. Lạng lách 3D chân thực (Smooth Hydrodynamic Heading):
+ *    - Quạt lệch 1 bên sẽ bẻ góc mũi bơi (yaw) nhẹ nhàng 2-4 độ để lượn qua trái/phải êm ái.
+ *    - TUYỆT ĐỐI KHÔNG BỊ NẢY VĂNG SIÊU TỐC: Cọ vào phao phân làn chỉ bị giảm tốc nhẹ và tự nắn thẳng hướng!
+ * 3. Hơi thở tự nhiên (Breath & O2 Rhythm):
+ *    - Mỗi sải quạt tay hoặc đạp chân ngoi đầu lên sẽ tự động hít một hơi O2 căng tràn (kèm âm thanh hít thở).
+ *    - Nín thở lướt nước được ~14s; bơi đều đặn thì O2 luôn dồi dào, không lo ngạt thở bất tử!
  */
 
-import { LIMBS, SWIM_STYLES } from './config.js?v=16';
+import { LIMBS, SWIM_STYLES } from './config.js?v=21';
 
 const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
 
@@ -22,24 +28,24 @@ const Q = {
   LIFT_RATE: 11.0,
   K: 68,
   C: 9.0,
-  TRACTION: 13.5,   // Lực đẩy thể thao mạnh mẽ, bơi lướt cực đã
-  SLIDE: 0.8,       // Lực cản khi giữ phím vươn tay
-  DRAG: 0.28,       // Lực cản nước cơ bản
+  TRACTION: 12.0,   // Lực đẩy thủy lực mạnh mẽ, sải tay xé nước cực đã
+  SLIDE: 0.5,       // Lực cản khi vươn tay
+  DRAG: 0.20,       // Lực cản nước cơ bản
   I_PITCH: 0.38,
-  I_ROLL: 0.088,    // Quán tính ngang đằm: nghiêng từ từ, dễ giữ nhịp
-  TIP: 6.8,         // Lực xoắn nghiêng vừa phải, vui nhộn nhưng không lật gắt
-  TIP_PITCH: 2.2,
-  BALANCE: 96,      // Cân bằng vững vàng
+  I_ROLL: 0.088,
+  TIP: 4.8,         // Chao đảo vui nhộn nhưng không lật gắt
+  TIP_PITCH: 1.8,
+  BALANCE: 96,
   BAL4: 76,
-  BAL2: 32.0,       // Thăng bằng tốt khi đổi cặp chéo 2 chi
+  BAL2: 32.0,
   REAR: 0.36,
   LEG_I: 0.008,
   COM: 0.06,
-  ANG_DAMP: 2.8,
-  FALL_ROLL: 1.15,  // ~66 độ nghiêng ngang mới bị lật
-  FALL_PITCH: 1.42, // ~81 độ chúi dựng đứng mới bị cắm đầu
-  BREATH_DRAIN: 0.045, // O2 dồi dào (~22 giây lặn liên tục)
-  BREATH_RECOVER: 2.2, // Hồi O2 nhanh khi đầu nhô lên mặt nước
+  ANG_DAMP: 3.2,
+  FALL_ROLL: 1.30,  // ~74 độ nghiêng ngang mới bị lật
+  FALL_PITCH: 1.48, // ~85 độ chúi dựng đứng mới bị cắm đầu
+  BREATH_DRAIN: 0.065,  // Nín thở được ~15s nếu lướt không quạt tay
+  BREATH_RECOVER: 2.2,  // Hồi phục O2 nhanh chóng khi quạt tay/đạp chân ngoi thở
 };
 
 const REST_HEIGHT = 1.15 - 9.8 / (4 * Q.K);
@@ -53,9 +59,9 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
     vx: 0,
     y: REST_HEIGHT,
     vy: 0,
-    z: 0,          // Lệch trái/phải trong làn bơi (-1.25m -> +1.25m)
+    z: 0,          // Lệch trái/phải trong làn bơi (-1.08m -> +1.08m)
     vz: 0,
-    yaw: 0,        // Góc ngoáy thân trái/phải khi quạt lệch
+    yaw: 0,        // Góc quay mũi người bơi (-0.28 rad -> +0.28 rad)
     wy: 0,
     pitch: 0,
     wp: 0,
@@ -63,7 +69,7 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
     wr: 0,
     breath: 1.0,
     isBreathing: true,
-    mouthY: 0.05,
+    mouthY: 0.08,
     rhythmBonus: 0,
     turboUsed: false,
     limbs: LIMBS.map(() => ({
@@ -71,7 +77,7 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
       da: 0,
       lift: 0,
       submerged: true,
-      load: 0.25,
+      load: 0.6,
       tipX: 0,
       tipY: 0,
     })),
@@ -116,7 +122,7 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
     const isButterfly = currentStyle.id === 'butterfly';
     const isBackstroke = currentStyle.id === 'backstroke';
 
-    const aFwd = isDoggy ? 0.50 : (isBreast ? 0.60 : Q.A_FWD);
+    const aFwd = isDoggy ? 0.52 : (isBreast ? 0.62 : Q.A_FWD);
     const swingRate = isDoggy ? 8.8 : Q.SWING;
     const pushRate = isDoggy ? 6.0 : Q.PUSH;
 
@@ -127,11 +133,11 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
 
       limb.lift += ((isPressed ? 1 : 0) - limb.lift) * Math.min(1, Q.LIFT_RATE * dt);
 
-      const effectiveReach = (cfg.len - Q.LIFT * limb.lift) * Math.cos(limb.a);
       const [jointH, jointVh] = getJointHeightAndVel(cfg);
       const wasSubmerged = limb.submerged;
 
-      limb.submerged = effectiveReach >= jointH * 0.68;
+      // Chi chìm trong nước khi quạt; chỉ nhấc cao khỏi nước khi giơ cao vung tay tới trước
+      limb.submerged = !(isPressed && limb.a > 0.48 && limb.lift > 0.45);
 
       let rate;
       if (isPressed) {
@@ -153,8 +159,9 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
       }
 
       if (limb.submerged) {
-        const supportForce = Math.max(0, Q.K * (effectiveReach - jointH * 0.68) - Q.C * jointVh);
-        limb.load = supportForce / 9.8;
+        const waterDepth = Math.max(0, 1.18 - jointH * 0.95);
+        const supportForce = Math.max(0, Q.K * waterDepth - Q.C * jointVh);
+        limb.load = Math.max(0.65, supportForce / 9.8);
         submergedCount++;
         sideMask |= cfg.z < 0 ? 1 : 2;
 
@@ -165,17 +172,21 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
         const clampedLoad = Math.min(1.5, limb.load);
         if (isPressed) {
           dragCoeff += Q.SLIDE * clampedLoad;
-          pitchTorque -= 0.14 * clampedLoad;
+          pitchTorque -= 0.10 * clampedLoad;
         } else {
-          const strokeSpeed = -cfg.len * Math.cos(limb.a) * rate;
+          // Lực quạt nước đẩy tới
+          const strokeSpeed = Math.max(0, -cfg.len * Math.cos(limb.a) * rate);
           const styleMult = cfg.front ? currentStyle.armThrustMult : currentStyle.legThrustMult;
-          const push = Math.max(0.8, Q.TRACTION * styleMult * clampedLoad * strokeSpeed);
+          const push = Q.TRACTION * styleMult * clampedLoad * strokeSpeed;
           forwardPush += push;
-          dragCoeff += 1.2 * clampedLoad;
+          dragCoeff += 1.0 * clampedLoad;
 
           if (strokeSpeed > 0.08) {
-            yawTorque += -cfg.z * push * 0.32;
-            rollTorque += -cfg.z * push * 0.12;
+            // Lực bẻ góc mũi bơi (yaw) êm ái:
+            // Quạt chi trái (cfg.z < 0) hướng mũi sang phải (+yaw), quạt chi phải hướng mũi sang trái (-yaw)
+            const steerDir = cfg.z < 0 ? 1 : -1;
+            yawTorque += steerDir * (push * 0.08);
+            rollTorque += steerDir * (push * 0.04);
           }
         }
 
@@ -200,87 +211,98 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
     const diag2 = state.limbs[1].da < -1.1 && state.limbs[2].da < -1.1;
 
     if (currentStyle.syncBonusType === 'paired' && (bothArmsPull || bothLegsKick)) {
-      forwardPush *= 1.18;
-      state.rhythmBonus = clamp(state.rhythmBonus + 2.0 * dt, 0, 1);
+      forwardPush *= 1.20;
+      state.rhythmBonus = clamp(state.rhythmBonus + 2.2 * dt, 0, 1);
     } else if (currentStyle.syncBonusType === 'diagonal' && (diag1 || diag2)) {
-      forwardPush *= 1.15;
-      state.rhythmBonus = clamp(state.rhythmBonus + 2.0 * dt, 0, 1);
+      forwardPush *= 1.16;
+      state.rhythmBonus = clamp(state.rhythmBonus + 2.2 * dt, 0, 1);
     } else if (isDoggy && activeStrokeEffort > 0.4) {
-      forwardPush *= 1.10;
+      forwardPush *= 1.12;
       state.rhythmBonus = clamp(state.rhythmBonus + 1.8 * dt, 0, 1);
     } else {
       state.rhythmBonus = clamp(state.rhythmBonus - 1.2 * dt, 0, 1);
     }
 
-    // Gia tốc tịnh tiến & Lực cản nước cân bằng chuẩn:
-    // Tốc độ bình thường ~1.6 - 2.2 m/s; bơi nước rút nhịp chuẩn đạt tối đa ~2.7 m/s.
-    const netAx = forwardPush - (2.4 + dragCoeff) * state.vx - Q.DRAG * state.vx * Math.abs(state.vx);
-    state.vx = clamp(state.vx + netAx * dt, 0, 3.1);
-    state.vy += (totalLift - 9.8) * dt;
-    state.y += state.vy * dt;
+    // Gia tốc tịnh tiến & Lực cản nước cân bằng chuẩn thể thao (~2.2 - 2.8 m/s)
+    const netAx = forwardPush - (2.2 + dragCoeff) * state.vx - Q.DRAG * state.vx * Math.abs(state.vx);
+    state.vx = clamp(state.vx + netAx * dt, 0, 3.2);
 
-    // Ngoáy thân trái/phải mượt mà
-    state.wy += (yawTorque - 4.5 * state.yaw - 2.8 * state.wy) * dt;
-    state.yaw = clamp(state.yaw + state.wy * dt, -0.42, 0.42);
+    // Lực nâng mặt nước giữ thăng bằng độ sâu
+    const buoyancyPush = (REST_HEIGHT - state.y) * 28.0;
+    state.vy += (totalLift - 9.8 + buoyancyPush) * dt;
+    state.y = clamp(state.y + state.vy * dt, REST_HEIGHT - 0.25, REST_HEIGHT + 0.18);
 
+    // Góc mũi bơi (yaw) lượn êm ái và tự trả về thẳng
+    state.wy += (yawTorque - 3.8 * state.yaw - 3.0 * state.wy) * dt;
+    state.yaw = clamp(state.yaw + state.wy * dt, -0.32, 0.32);
+
+    // Vị trí tiến X và vị trí ngang Z dịch chuyển êm theo hướng mũi bơi:
     state.x = Math.max(0, state.x + state.vx * Math.cos(state.yaw) * dt);
-    state.z += (state.vx * Math.sin(state.yaw) + state.vz) * dt;
-    state.vz *= Math.pow(0.04, dt);
+    // Vận tốc ngang hoàn toàn dựa vào góc mũi bơi, KHÔNG CÓ BẬT NHẢY SIÊU TỐC:
+    const headingVz = state.vx * Math.sin(state.yaw);
+    state.z = clamp(state.z + headingVz * dt, -1.15, 1.15);
 
-    // Va chạm phao phân làn hồ bơi (Lane Buoy Clatter & Ricochet):
-    // Bơi lệch chém vào phao phân làn sẽ bị nảy ngược lại, vặn người và mất tốc độ
-    if (Math.abs(state.z) > 1.06) {
-      const side = Math.sign(state.z);
-      state.z = side * 1.06;
-      state.vz = -side * 1.8;
-      state.yaw = -side * 0.22;
-      state.vx = Math.max(0, state.vx * 0.82);
-      state.wr += side * 3.8;
-      state.events.push({ type: 'buoyClatter', side: side > 0 ? 1 : -1, x: state.x });
+    // Va chạm phao phân làn hồ bơi:
+    // Cọ vào phao chỉ bị ma sát làm giảm nhẹ tốc độ và nắn mũi bơi thẳng lại, KHÔNG NẢY BẬT:
+    if (Math.abs(state.z) >= 1.05) {
+      const bSide = Math.sign(state.z);
+      state.z = bSide * 1.05;
+      state.yaw *= 0.65; // Nắn thẳng mũi bơi
+      state.wy = -bSide * 0.4;
+      state.vx = Math.max(0.4, state.vx * 0.96); // Giảm tốc nhẹ do ma sát với dây phao
+      state.events.push({ type: 'buoyClatter', side: bSide, x: state.x });
     }
 
+    // Chướng ngại vật trên đường bơi:
     // 1. Phao Vịt Vàng Khổng Lồ ở 22m (z ~ 0.25)
     if (Math.abs(state.x - 22.0) < 0.75 && Math.abs(state.z - 0.25) < 0.65) {
-      const pushDirZ = state.z > 0.25 ? 1 : -1;
       state.x = 21.2;
-      state.vx = Math.max(0, state.vx * 0.45);
-      state.vz = pushDirZ * 1.6;
-      state.wr += pushDirZ * 4.2;
-      state.events.push({ type: 'duckBonk', x: 22.0, z: 0.25 });
+      state.vx = Math.max(0, state.vx * 0.6);
+      state.yaw = state.z > 0.25 ? 0.18 : -0.18;
+      state.events.push({ type: 'duckBonk' });
     }
 
-    // 2. Vòng Xoáy Nước Tăng Tốc ở 45m (z ~ 0)
-    if (Math.abs(state.x - 45.0) < 0.65 && Math.abs(state.z) < 0.60 && !state.turboUsed) {
+    // 2. Luồng Nước Xoáy Tăng Tốc Turbo ở 45m
+    if (Math.abs(state.x - 45.0) < 1.2 && Math.abs(state.z) < 0.55 && !state.turboUsed) {
+      state.vx = Math.min(3.8, state.vx + 1.2);
       state.turboUsed = true;
-      state.vx = Math.min(3.5, state.vx + 1.35);
-      state.events.push({ type: 'turboBoost', x: 45.0, z: 0 });
+      state.events.push({ type: 'turboBoost' });
     }
 
-    // 3. Phao Cứu Sinh Tròn ở 70m (z ~ -0.25)
-    if (Math.abs(state.x - 70.0) < 0.75 && Math.abs(state.z - (-0.25)) < 0.65) {
-      const pushDirZ = state.z > -0.25 ? 1 : -1;
-      state.x = 69.2;
-      state.vx = Math.max(0, state.vx * 0.50);
-      state.vz = pushDirZ * 1.5;
-      state.wr += pushDirZ * 3.8;
-      state.events.push({ type: 'lifebuoyBonk', x: 70.0, z: -0.25 });
+    // 3. Vòng Xoáy Nước (Whirlpool) ở 68m (z ~ -0.4)
+    if (Math.abs(state.x - 68.0) < 0.85 && Math.abs(state.z - (-0.4)) < 0.65) {
+      state.yaw += 0.25;
+      state.vx = Math.max(0.8, state.vx * 0.85);
+      state.events.push({ type: 'whirlpool' });
     }
 
-    // Cân bằng Pitch (chúi/ngửa): Nước nâng đỡ cơ thể nằm ngang phẳng, triệt tiêu nguy cơ cắm đầu
-    const pitchRighting = -28.0 * state.pitch - 6.5 * state.wp;
-    const clampedPitchTorque = clamp(pitchTorque * 0.12, -1.2, 1.2);
+    // 4. Phao Hồng Hạc Flamingo ở 88m (z ~ 0.3)
+    if (Math.abs(state.x - 88.0) < 0.75 && Math.abs(state.z - 0.3) < 0.65) {
+      state.x = 87.2;
+      state.vx = Math.max(0, state.vx * 0.6);
+      state.yaw = state.z > 0.3 ? 0.18 : -0.18;
+      state.events.push({ type: 'flamingoBonk' });
+    }
+
+    // Cân bằng Pitch (chúi/ngửa)
+    pitchTorque += Q.REAR * netAx * (state.y - REST_HEIGHT);
+    const recoilScale = isButterfly ? 0.45 : 0.85;
+    state.wp -= (Q.LEG_I * recoilScale * accelImpulseSum) / Q.I_PITCH;
+
+    const pitchRighting = -28.0 * (state.pitch + 0.18 * state.wp);
+
     state.wp += (
-      clampedPitchTorque / Q.I_PITCH +
-      pitchRighting
+      (pitchTorque + pitchRighting) / Q.I_PITCH +
+      Q.TIP_PITCH * Math.sin(state.pitch) -
+      Q.ANG_DAMP * state.wp
     ) * dt;
 
-    // Cân bằng Roll (nghiêng ngang): Nước luôn có lực đẩy Ác-si-mét nâng đỡ cơ thể
+    // Cân bằng Roll (nghiêng ngang):
     const rollStabilizer = sideMask === 3
       ? [0, 0, Q.BAL2, Q.BALANCE, Q.BAL4][submergedCount] * currentStyle.rollStabilityMult
-      : 14.5;
+      : 24.0;
 
-    // Lực tự phục hồi cân bằng tự nhiên của nước (Keel effect)
-    const buoyantRighting = -12.0 * state.roll;
+    const buoyantRighting = -18.0 * state.roll;
 
     state.wr += (
       (rollTorque + buoyantRighting) / Q.I_ROLL +
@@ -292,34 +314,25 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
     state.pitch += state.wp * dt;
     state.roll += state.wr * dt;
 
-    // TÍNH TOÁN ĐỘ CAO MŨI / MIỆNG ĐỂ LẤY HƠI (BREATHING):
-    let isHeadAboveWater = false;
-
-    if (isBackstroke) {
-      isHeadAboveWater = Math.abs(state.roll) < 0.95;
-    } else if (isDoggy) {
-      isHeadAboveWater = state.pitch > -0.35 && Math.abs(state.roll) < 0.85;
-    } else {
-      const strokeLift = (isBreast || isButterfly)
-        ? (bothArmsPull ? 0.28 : 0.08)
-        : Math.abs(state.roll) * 0.22;
-      const headHeight = (state.y - REST_HEIGHT) + 0.45 * Math.sin(state.pitch) + strokeLift;
-      isHeadAboveWater = headHeight > -0.12 && Math.abs(state.roll) < 0.82;
-    }
-
-    state.mouthY = isHeadAboveWater ? 0.12 : -0.15;
+    // TÍNH TOÁN LẤY HƠI TRỰC QUAN & CHÍNH XÁC:
+    // Quạt tay hoặc đạp chân hoặc nghiêng người hoặc bơi ngửa/chó sẽ ngoi đầu lấy hơi
+    const armIsStroking = (state.limbs[0].da < -0.8 || state.limbs[1].da < -0.8);
+    const legIsKicking = (state.limbs[2].da < -1.0 || state.limbs[3].da < -1.0);
+    const rollBreathing = Math.abs(state.roll) > 0.12;
+    const isHeadAboveWater = armIsStroking || legIsKicking || rollBreathing || isBackstroke || isDoggy;
+    state.mouthY = isHeadAboveWater ? 0.14 : -0.12;
 
     if (isHeadAboveWater) {
       const prevBreath = state.breath;
       state.breath = Math.min(1.0, state.breath + Q.BREATH_RECOVER * dt);
       state.isBreathing = true;
-      if (prevBreath < 0.65 && breathSoundCooldown <= 0) {
+      if (prevBreath < 0.75 && breathSoundCooldown <= 0) {
         state.events.push({ type: 'inhale' });
-        breathSoundCooldown = 1.0;
+        breathSoundCooldown = 0.9;
       }
     } else {
       state.isBreathing = false;
-      const drain = (Q.BREATH_DRAIN + activeStrokeEffort * 0.015) * currentStyle.breathDrainMult;
+      const drain = Q.BREATH_DRAIN * currentStyle.breathDrainMult;
       state.breath = Math.max(0, state.breath - drain * dt);
     }
 
@@ -358,6 +371,7 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
         vx: 0,
         y: REST_HEIGHT,
         vy: 0,
+        z: 0,
         vz: 0,
         yaw: 0,
         wy: 0,
@@ -377,7 +391,7 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
           da: 0,
           lift: 0,
           submerged: true,
-          load: 0.25,
+          load: 0.6,
         });
       }
       accumulator = 0;

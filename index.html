@@ -236,10 +236,10 @@
   </main>
 
 <script type="module">
-  import { GAMES } from './shared/ui/gameRegistry.js?v=18';
-  import { portalSettings } from './shared/storage/portalCache.js?v=18';
-  import { initI18n, onLangChange, getLang } from './shared/i18n/i18n.js?v=18';
-  import { initSecurityGuard } from './shared/security/securityGuard.js?v=18';
+  import { GAMES } from './shared/ui/gameRegistry.js?v=21';
+  import { portalSettings } from './shared/storage/portalCache.js?v=21';
+  import { initI18n, onLangChange, getLang } from './shared/i18n/i18n.js?v=21';
+  import { initSecurityGuard } from './shared/security/securityGuard.js?v=21';
 
   initSecurityGuard();
   initI18n();
@@ -260,7 +260,7 @@
 
       return `
         <a class="game" href=".${g.path}">
-          <div class="game__shot" style="background-image:url('./shared/img/${g.id}.png?v=18')" role="img"
+          <div class="game__shot" style="background-image:url('./shared/img/${g.id}.png?v=21')" role="img"
                aria-label="${en ? g.titleEn : g.titleVi}"></div>
           <div class="game__body">
             <div class="game__top">

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Chim Béo Tập Bay | Wobbly Wings Bird</title>
-  <link rel="stylesheet" href="../../shared/css/game-shell.css?v=18">
-  <script type="module" src="./main.js?v=18"></script>
+  <link rel="stylesheet" href="../../shared/css/game-shell.css?v=21">
+  <script type="module" src="./main.js?v=21"></script>
 </head>
 <body>
 <div class="game" style="--hue:35">
@@ -126,17 +126,27 @@
       <span class="t-en" lang="en">HOME SWEET NEST!!</span>
     </div>
 
-    <!-- 2-Wing Control Pad (F = Left Wing | J = Right Wing) -->
-    <div class="game-pad game-pad--2">
+    <!-- 3-Button Control Pad: Left Wing [F] | Emergency Egg Rocket [SPACE] | Right Wing [J] -->
+    <div class="game-pad game-pad--bird">
       <button class="game-btn" type="button" data-wing="0" style="--c:oklch(0.68 0.18 45)">
+        <span class="game-btn__dot" style="background:#f97316"></span>
         <span><span class="t-vi" lang="vi">Cánh Trái</span><span class="t-en" lang="en">Left Wing</span></span>
-        <small><span class="t-vi" lang="vi">Giữ 2 nút = Lướt dù</span><span class="t-en" lang="en">Hold both = Glide</span></small>
-        <span class="game-btn__key only-pc">F</span>
+        <small><span class="t-vi" lang="vi">Vỗ F (Lượn phải)</span><span class="t-en" lang="en">F (Steer R)</span></small>
+        <span class="game-btn__key">F</span>
       </button>
+
+      <button class="game-btn game-btn--egg" type="button" data-egg="1" style="--c:oklch(0.82 0.22 88)">
+        <span class="game-btn__dot" style="background:#eab308"></span>
+        <span><span class="t-vi" lang="vi">Trứng Cứu Nguy</span><span class="t-en" lang="en">Egg Rocket</span></span>
+        <small><span class="t-vi" lang="vi">Nảy vọt</span><span class="t-en" lang="en">Pop Boost</span></small>
+        <span class="game-btn__key">SPACE</span>
+      </button>
+
       <button class="game-btn" type="button" data-wing="1" style="--c:oklch(0.60 0.20 295)">
+        <span class="game-btn__dot" style="background:#a855f7"></span>
         <span><span class="t-vi" lang="vi">Cánh Phải</span><span class="t-en" lang="en">Right Wing</span></span>
-        <small><span class="t-vi" lang="vi">Giữ 2 nút = Lướt dù</span><span class="t-en" lang="en">Hold both = Glide</span></small>
-        <span class="game-btn__key only-pc">J</span>
+        <small><span class="t-vi" lang="vi">Vỗ J (Lượn trái)</span><span class="t-en" lang="en">J (Steer L)</span></small>
+        <span class="game-btn__key">J</span>
       </button>
     </div>
 
@@ -147,8 +157,8 @@
           <span class="t-en" lang="en">Wobbly Wings Bird (100m)</span>
         </h2>
         <p class="game-screen__lead">
-          <span class="t-vi" lang="vi">Chỉ dùng 2 phím F (Cánh Trái) và J (Cánh Phải) để giữ thăng bằng cho chú chim béo bay 100m về tổ ấm!</span>
-          <span class="t-en" lang="en">Use only F (Left Wing) and J (Right Wing) to flap and glide 100m back to your nest!</span>
+          <span class="t-vi" lang="vi">Phím F & J: Vỗ cánh trái / phải và lạng lách 3D. Giữ cả F + J: Căng cánh lướt dù hồi sức. Phím SPACE hoặc Nút Trứng: Bắn trứng phản lực nảy vọt cứu nguy khi sắp cắm mỏ!</span>
+          <span class="t-en" lang="en">F & J keys: Flap left / right wings and steer in 3D. Hold both F + J to glide. Press SPACE or tap Egg Rocket button for an emergency boost!</span>
         </p>
 
         <div>

@@ -296,23 +296,25 @@ float bandStep(float edge, float v, float w) { return smoothstep(edge - w, edge 
 
 function createKeyBadgeSprite(keyText, bgHex) {
   const canvas = document.createElement('canvas');
-  canvas.width = 128;
-  canvas.height = 128;
+  canvas.width = 64;
+  canvas.height = 64;
   const ctx = canvas.getContext('2d');
 
   ctx.beginPath();
-  ctx.arc(64, 64, 52, 0, Math.PI * 2);
+  ctx.arc(32, 32, 26, 0, Math.PI * 2);
   ctx.fillStyle = bgHex;
   ctx.fill();
-  ctx.lineWidth = 9;
+  ctx.lineWidth = 5;
   ctx.strokeStyle = '#ffffff';
   ctx.stroke();
 
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '900 64px ui-monospace, system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(keyText, 64, 68);
+  if (keyText) {
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 30px monospace, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(keyText, 32, 33);
+  }
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -322,7 +324,6 @@ function createKeyBadgeSprite(keyText, bgHex) {
     depthTest: false,
   });
   const sprite = new THREE.Sprite(mat);
-  sprite.scale.set(0.18, 0.18, 1);
   sprite.renderOrder = 25;
   return sprite;
 }

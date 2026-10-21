@@ -7,14 +7,14 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { BIRD_GAME_CONFIG, WINGS, BIRD_RANKS, BIRD_SKINS } from './config.js?v=17';
-import { createBirdPhysics } from './physics.js?v=17';
-import { createBirdModel } from './birdModel.js?v=17';
-import { createSkyScene } from './skyScene.js?v=17';
-import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=17';
-import { createGameCache } from '../../shared/storage/portalCache.js?v=17';
-import { GAMES } from '../../shared/ui/gameRegistry.js?v=17';
-import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=17';
+import { BIRD_GAME_CONFIG, WINGS, BIRD_RANKS, BIRD_SKINS } from './config.js?v=21';
+import { createBirdPhysics } from './physics.js?v=21';
+import { createBirdModel } from './birdModel.js?v=21';
+import { createSkyScene } from './skyScene.js?v=21';
+import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=21';
+import { createGameCache } from '../../shared/storage/portalCache.js?v=21';
+import { GAMES } from '../../shared/ui/gameRegistry.js?v=21';
+import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=21';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -225,13 +225,8 @@ function handleResize() {
   const h = stage.clientHeight;
   if (!w || !h) return;
   renderer.setSize(w, h, false);
-  const padH = Math.min(padEl?.offsetHeight ?? 0, h * 0.45);
-  camera.aspect = w / (h + padH);
-  if (padH > 0) {
-    camera.setViewOffset(w, h + padH, 0, padH, w, h);
-  } else {
-    camera.clearViewOffset();
-  }
+  camera.aspect = w / h;
+  camera.clearViewOffset();
   camera.updateProjectionMatrix();
 }
 const resizeObs = new ResizeObserver(handleResize);
@@ -257,11 +252,13 @@ const isInputActive = () => session.playing && session.screen === 'playing';
 function bindHoldButton(btnEl, keyCode) {
   const pointers = new Set();
   const keys = new Set();
+  let tapTimer = 0;
 
   btnEl.addEventListener('pointerdown', (e) => {
     if (e.button > 0) return;
     e.preventDefault();
     pointers.add(e.pointerId);
+    tapTimer = 0.18;
     try {
       btnEl.setPointerCapture(e.pointerId);
     } catch {}
@@ -273,6 +270,7 @@ function bindHoldButton(btnEl, keyCode) {
   window.addEventListener('blur', () => {
     pointers.clear();
     keys.clear();
+    tapTimer = 0;
   });
 
   window.addEventListener('keydown', (e) => {
@@ -287,11 +285,15 @@ function bindHoldButton(btnEl, keyCode) {
 
   return {
     get pressed() {
-      return pointers.size > 0 || keys.size > 0;
+      return pointers.size > 0 || keys.size > 0 || tapTimer > 0;
+    },
+    tick(dt) {
+      if (tapTimer > 0) tapTimer = Math.max(0, tapTimer - dt);
     },
     reset() {
       pointers.clear();
       keys.clear();
+      tapTimer = 0;
     },
   };
 }
@@ -305,11 +307,17 @@ function showHint(name, duration = 2.6) {
   session.hintTimer = name ? duration : 0;
 }
 
-function triggerStamp(el) {
+const stampTimerMap = new WeakMap();
+function triggerStamp(el, durationMs = 1350) {
   if (!el) return;
   el.hidden = true;
   void el.offsetWidth;
   el.hidden = false;
+  if (stampTimerMap.has(el)) clearTimeout(stampTimerMap.get(el));
+  const t = setTimeout(() => {
+    el.hidden = true;
+  }, durationMs);
+  stampTimerMap.set(el, t);
 }
 
 function showScreen(screenName) {
@@ -318,6 +326,33 @@ function showScreen(screenName) {
   ui.screenResult.hidden = screenName !== 'result';
   ui.hud.hidden = screenName === 'start';
 }
+
+
+function triggerEggRocket() {
+  if (!isInputActive() || session.failPose) return;
+  if (physics.dropEgg()) {
+    synth.eggPop?.();
+    sky.spawnFeathers(physics.state.x, physics.state.y - 0.2, physics.state.z || 0, 16);
+    if (ui.stampFallVi) ui.stampFallVi.textContent = 'BẮN TRỨNG PHẢN LỰC!!';
+    if (ui.stampFallEn) ui.stampFallEn.textContent = 'EGG ROCKET BOOST!!';
+    triggerStamp(ui.stampFall, 1200);
+  }
+}
+
+const eggRocketBtn = q('[data-egg]');
+if (eggRocketBtn) {
+  eggRocketBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    triggerEggRocket();
+  });
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !e.repeat && isInputActive() && !session.failPose) {
+    e.preventDefault();
+    triggerEggRocket();
+  }
+});
 
 function startGame() {
   if (!allowUiAction()) return;
@@ -470,6 +505,7 @@ function finishGame(isWin) {
 const camState = {
   x: 0,
   y: 1.0,
+  z: 0,
   dist: 6.5,
   lookAt: new THREE.Vector3(),
 };
@@ -479,14 +515,15 @@ function updateCamera(dt) {
   const smooth = dt > 0 ? 1 - Math.exp(-dt * 6.0) : 1;
   camState.x += (s.x + s.vx * 0.15 - camState.x) * smooth;
   camState.y += (s.y - camState.y) * smooth;
+  camState.z += ((s.z || 0) * 0.85 - camState.z) * smooth;
 
   if (settings.cameraMode === 'side') {
     camera.position.set(camState.x + 0.3, camState.y + 0.5, 6.8);
     camState.lookAt.set(camState.x + 0.3, camState.y, 0);
   } else {
     // MẶC ĐỊNH: GÓC NHÌN THẲNG SAU LƯNG 100%
-    camera.position.set(camState.x - 2.6, camState.y + 0.85, 0);
-    camState.lookAt.set(camState.x + 2.2, camState.y - 0.1, 0);
+    camera.position.set(camState.x - 2.8, camState.y + 0.85, camState.z);
+    camState.lookAt.set(camState.x + 2.5, camState.y - 0.1, (s.z || 0) * 0.6);
   }
 
   camera.lookAt(camState.lookAt);
@@ -589,7 +626,7 @@ renderer.setAnimationLoop((nowMs) => {
     bird.root.position.set(s.x, fp.y, 0);
     bird.root.rotation.set(fp.roll, 0, fp.pitch);
   } else {
-    bird.root.position.set(s.x, s.y, 0);
+    bird.root.position.set(s.x, s.y, s.z || 0);
     bird.root.rotation.set(s.roll, 0, s.pitch);
   }
 

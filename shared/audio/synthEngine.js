@@ -366,6 +366,22 @@ export function createSynthEngine({ isMuted = () => false } = {}) {
       brassNote(130.8, chordTime, 1.35, 0.11 * gain);
     },
 
+    /** Tiếng "bụp... boing!" hoạt hình siêu bựa khi bắn trứng phản lực cứu nguy */
+    eggPop({ gain = 0.9 } = {}) {
+      tone({
+        type: 'sine',
+        freq: [320, 880],
+        dur: 0.18,
+        gain: 0.45 * gain,
+      });
+      burst({
+        dur: 0.15,
+        freq: [220, 950],
+        filter: 'highpass',
+        gain: 0.35 * gain,
+      });
+    },
+
     /** Tiếng trượt / va chạm nhẹ */
     slipWarning({ gain = 0.7 } = {}) {
       tone({

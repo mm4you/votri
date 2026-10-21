@@ -8,14 +8,14 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { GAME_CONFIG, LIMBS, RANKS, SKINS, SWIM_STYLES } from './config.js?v=17';
-import { createSwimPhysics } from './physics.js?v=17';
-import { createSwimmerModel } from './swimmerModel.js?v=17';
-import { createPoolScene } from './poolScene.js?v=17';
-import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=17';
-import { createGameCache } from '../../shared/storage/portalCache.js?v=17';
-import { GAMES } from '../../shared/ui/gameRegistry.js?v=17';
-import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=17';
+import { GAME_CONFIG, LIMBS, RANKS, SKINS, SWIM_STYLES } from './config.js?v=21';
+import { createSwimPhysics } from './physics.js?v=21';
+import { createSwimmerModel } from './swimmerModel.js?v=21';
+import { createPoolScene } from './poolScene.js?v=21';
+import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=21';
+import { createGameCache } from '../../shared/storage/portalCache.js?v=21';
+import { GAMES } from '../../shared/ui/gameRegistry.js?v=21';
+import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=21';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -331,13 +331,8 @@ function handleResize() {
   const h = stage.clientHeight;
   if (!w || !h) return;
   renderer.setSize(w, h, false);
-  const padH = Math.min(padEl?.offsetHeight ?? 0, h * 0.45);
-  camera.aspect = w / (h + padH);
-  if (padH > 0) {
-    camera.setViewOffset(w, h + padH, 0, padH, w, h);
-  } else {
-    camera.clearViewOffset();
-  }
+  camera.aspect = w / h;
+  camera.clearViewOffset();
   camera.updateProjectionMatrix();
 }
 const resizeObs = new ResizeObserver(handleResize);
@@ -423,11 +418,17 @@ function showHint(name, duration = 2.6) {
   session.hintTimer = name ? duration : 0;
 }
 
-function triggerStamp(el) {
+const stampTimerMap = new WeakMap();
+function triggerStamp(el, durationMs = 1350) {
   if (!el) return;
   el.hidden = true;
   void el.offsetWidth;
   el.hidden = false;
+  if (stampTimerMap.has(el)) clearTimeout(stampTimerMap.get(el));
+  const t = setTimeout(() => {
+    el.hidden = true;
+  }, durationMs);
+  stampTimerMap.set(el, t);
 }
 
 function showScreen(screenName) {
@@ -730,9 +731,9 @@ function processPhysicsEvents() {
       synth.turboBoost?.();
       pool.triggerTurbo();
       pool.spawnSplash(ev.x, ev.z, 1.4);
-      if (ui.stampGoalVi) ui.stampGoalVi.textContent = 'TĂNG TỐC VÔ TRI!!';
-      if (ui.stampGoalEn) ui.stampGoalEn.textContent = 'TURBO SPEED!!';
-      triggerStamp(ui.stampGoal);
+      if (ui.stampFallVi) ui.stampFallVi.textContent = 'TĂNG TỐC VÔ TRI!!';
+      if (ui.stampFallEn) ui.stampFallEn.textContent = 'TURBO SPEED!!';
+      triggerStamp(ui.stampFall, 1200);
     } else if (ev.type === 'lifebuoyBonk') {
       synth.strokeSplash({ power: 1.0, front: true });
       synth.slipWarning?.();
