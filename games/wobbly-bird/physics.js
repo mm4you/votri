@@ -233,19 +233,26 @@ export function createBirdPhysics() {
       state.dizzy = Math.max(0, state.dizzy - recoverRate * dt);
     }
 
-    // 6. Kiểm tra tiếp đất: Cắm Mỏ hay Nảy Bụng Cỏ (Belly Bounce)
+    // 6. Kiểm tra tiếp đất: Cắm Mỏ Bẹp Dí hay Nảy Bụng Cỏ (Belly Bounce)
     if (state.y <= 0.03 && state.x > 0.4) {
-      if (state.pitch < -0.30 || state.vy < -2.2) {
-        state.y = 0;
-        state.fallen = 'faceplant';
-      } else {
-        // Nảy bụng cỏ lướt tiếp
+      // Chỉ nảy bụng lướt tiếp NẾU:
+      // - Đang giữ cả 2 cánh F & J (lướt dù)
+      // - Rơi nhẹ nhàng êm ái (vy > -1.1 m/s)
+      // - Mỏ hướng ngang hoặc hơi ngửa (pitch >= -0.18)
+      // - Không bị choáng váng tiền đình (dizzy < 0.55)
+      if (bothHeld && state.vy > -1.1 && state.pitch >= -0.18 && state.dizzy < 0.55) {
         state.y = 0.04;
-        state.vy = Math.max(0.60, -state.vy * 0.40);
-        state.pitch = Math.max(-0.06, state.pitch * 0.45);
+        state.vy = Math.max(0.55, -state.vy * 0.35);
+        state.pitch = Math.max(-0.05, state.pitch * 0.4);
         state.roll *= 0.50;
-        state.vx *= 0.88;
+        state.vx *= 0.85;
         state.events.push({ type: 'grassBounce' });
+      } else {
+        // Cắm mỏ bẹp dí (Faceplant Splat) hài hước!
+        state.y = 0.02;
+        state.vx = 0;
+        state.vy = 0;
+        state.fallen = 'faceplant';
       }
     } else if (state.dizzy >= 1.0) {
       state.fallen = 'dizzy';

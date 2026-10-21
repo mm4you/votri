@@ -7,14 +7,14 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { BIRD_GAME_CONFIG, WINGS, BIRD_RANKS, BIRD_SKINS } from './config.js?v=16';
-import { createBirdPhysics } from './physics.js?v=16';
-import { createBirdModel } from './birdModel.js?v=16';
-import { createSkyScene } from './skyScene.js?v=16';
-import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=16';
-import { createGameCache } from '../../shared/storage/portalCache.js?v=16';
-import { GAMES } from '../../shared/ui/gameRegistry.js?v=16';
-import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=16';
+import { BIRD_GAME_CONFIG, WINGS, BIRD_RANKS, BIRD_SKINS } from './config.js?v=17';
+import { createBirdPhysics } from './physics.js?v=17';
+import { createBirdModel } from './birdModel.js?v=17';
+import { createSkyScene } from './skyScene.js?v=17';
+import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=17';
+import { createGameCache } from '../../shared/storage/portalCache.js?v=17';
+import { GAMES } from '../../shared/ui/gameRegistry.js?v=17';
+import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=17';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -365,9 +365,9 @@ function onBirdCrash(reason) {
   const s = physics.state;
   session.failPose = {
     reason,
-    roll: reason === 'faceplant' ? 0.15 : s.roll,
-    pitch: reason === 'faceplant' ? -1.25 : s.pitch,
-    y: reason === 'faceplant' ? 0.05 : s.y,
+    roll: reason === 'faceplant' ? (Math.random() > 0.5 ? 0.18 : -0.18) : s.roll,
+    pitch: reason === 'faceplant' ? -1.35 : s.pitch,
+    y: reason === 'faceplant' ? 0.02 : s.y,
     rise: 0,
     from: null,
     wings: s.wings.map((w) => ({ a: w.a, da: 0, lift: w.lift })),
@@ -378,15 +378,17 @@ function onBirdCrash(reason) {
     if (ui.stampFallEn) ui.stampFallEn.textContent = 'DIZZY SPIN!!';
     showHint('dizzy', Infinity);
   } else {
-    if (ui.stampFallVi) ui.stampFallVi.textContent = 'CẮM MỎ!!';
-    if (ui.stampFallEn) ui.stampFallEn.textContent = 'FACEPLANT!!';
+    if (ui.stampFallVi) ui.stampFallVi.textContent = 'CẮM MỎ BẸP DÍ!!';
+    if (ui.stampFallEn) ui.stampFallEn.textContent = 'FACEPLANT SPLAT!!';
     showHint('crash', Infinity);
   }
 
   triggerStamp(ui.stampFall);
   ui.getupBtn.hidden = false;
-  synth.birdCrash();
-  sky.spawnFeathers(s.x, s.y, 0, 10);
+  synth.birdCrash({ dizzy: reason === 'dizzy' });
+  sky.spawnFeathers(s.x, 0.08, 0, 16);
+  sky.spawnGrassPuff(s.x, 0, 10);
+  sky.spawnGrassPuff(s.x + 0.25, 0, 8);
 }
 
 function triggerRecover() {
@@ -401,6 +403,7 @@ function triggerRecover() {
   ui.getupBtn.hidden = true;
   ui.stampFall.hidden = true;
   showHint(null);
+  sky.spawnFeathers(physics.state.x, 0.6, 0, 12);
   synth.recoverPop();
 }
 
@@ -520,8 +523,8 @@ renderer.setAnimationLoop((nowMs) => {
           for (const inp of wingInputs) inp.reset();
         }
       } else {
-        fp.y = Math.max(0.05, fp.y - 2.5 * dt);
-        fp.pitch = lerp(fp.pitch, -1.25, Math.min(1, dt * 6));
+        fp.y = Math.max(0.02, fp.y - 3.5 * dt);
+        fp.pitch = lerp(fp.pitch, -1.35, Math.min(1, dt * 8));
       }
     } else {
       physics.step(dt, pressedFlags);

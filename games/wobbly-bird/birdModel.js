@@ -8,8 +8,8 @@
  * - 4 Bộ cánh ngộ nghĩnh: Vịt Vàng Mỏ Bẹt, Bồ Câu Ngơ Ngác, Vẹt Nhiệt Đới, Cú Mèo Mắt Lồi.
  */
 
-import * as THREE from '../../shared/vendor/three.module.js?v=16';
-import { WINGS, BIRD_SKINS } from './config.js?v=16';
+import * as THREE from '../../shared/vendor/three.module.js?v=17';
+import { WINGS, BIRD_SKINS } from './config.js?v=17';
 
 function createKeyBadgeSprite(keyText, bgHex) {
   const canvas = document.createElement('canvas');
@@ -98,6 +98,7 @@ export function createBirdModel({ skinId = 'pigeon', isGhost = false } = {}) {
 
   // 2. Mắt lồi Googly Eyes siêu ngố trên đỉnh đầu (nhìn từ sau lưng thấy rõ 2 tròng mắt tròn xoe!)
   const pupils = [];
+  const xEyes = [];
   for (const side of [-1, 1]) {
     const eyeHolder = new THREE.Group();
     eyeHolder.position.set(0.18, 0.30, side * 0.16);
@@ -115,8 +116,23 @@ export function createBirdModel({ skinId = 'pigeon', isGhost = false } = {}) {
     pupilPivot.add(glint);
 
     eyeHolder.add(pupilPivot);
-    bodyGroup.add(eyeHolder);
     pupils.push(pupilPivot);
+
+    // Mắt chữ X ngất xỉu hoa mắt khi cắm mỏ
+    const xEyePivot = new THREE.Group();
+    xEyePivot.position.set(0.082, 0.02, side * 0.035);
+    const xMat = makeMat(0x0f172a, 0.2);
+    const xBar1 = new THREE.Mesh(new THREE.BoxGeometry(0.016, 0.095, 0.016), xMat);
+    xBar1.rotation.z = Math.PI / 4;
+    xEyePivot.add(xBar1);
+    const xBar2 = new THREE.Mesh(new THREE.BoxGeometry(0.016, 0.095, 0.016), xMat);
+    xBar2.rotation.z = -Math.PI / 4;
+    xEyePivot.add(xBar2);
+    xEyePivot.visible = false;
+    eyeHolder.add(xEyePivot);
+    xEyes.push(xEyePivot);
+
+    bodyGroup.add(eyeHolder);
 
     // Mí mắt ngố
     const lid = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.016, 10, 24), bodyMat);
@@ -129,6 +145,26 @@ export function createBirdModel({ skinId = 'pigeon', isGhost = false } = {}) {
     blush.position.set(0.24, 0.10, side * 0.28);
     bodyGroup.add(blush);
   }
+
+  // 2b. VÒNG SAO VÀNG CHOÁNG VÁNG TIỀN ĐÌNH (DIZZY STARS HALO)
+  // 4 ngôi sao 3D lấp lánh xoay vòng trên đỉnh đầu khi chim bị cắm mỏ hoặc choáng
+  const haloGroup = new THREE.Group();
+  haloGroup.position.set(0.12, 0.52, 0);
+  const starMat = makeMat(0xfacc15, 0.15, 0xf59e0b, 0.85);
+  const stars = [];
+  for (let i = 0; i < 4; i++) {
+    const starHolder = new THREE.Group();
+    const s1 = new THREE.Mesh(new THREE.OctahedronGeometry(0.042, 0), starMat);
+    s1.scale.set(1.2, 0.32, 1.2);
+    starHolder.add(s1);
+    const s2 = new THREE.Mesh(new THREE.OctahedronGeometry(0.042, 0), starMat);
+    s2.scale.set(0.32, 1.2, 1.2);
+    starHolder.add(s2);
+    haloGroup.add(starHolder);
+    stars.push(starHolder);
+  }
+  haloGroup.visible = false;
+  bodyGroup.add(haloGroup);
 
   // 3. Mào lông ngộ nghĩnh trên đỉnh đầu
   const crestGroup = new THREE.Group();
@@ -271,48 +307,100 @@ export function createBirdModel({ skinId = 'pigeon', isGhost = false } = {}) {
 
   function updatePose(physState, pressedFlags, timeSec, failPose = null) {
     const wingsData = failPose ? failPose.wings : physState.wings;
+    const dizzyVal = physState.dizzy || 0;
 
-    // 1. Cử động cánh Trái (F) & Phải (J)
+    // 1. Biến dạng Squashing & Jiggle (Bẹp dí ngộ nghĩnh khi cắm mỏ)
+    if (failPose) {
+      const splatSquash = 0.44 + Math.sin(timeSec * 16) * 0.08;
+      bodyGroup.scale.set(1.42, splatSquash, 1.42);
+    } else {
+      const breath = Math.sin(timeSec * 8) * 0.025;
+      bodyGroup.scale.set(1.0 + breath * 0.5, 1.0 - breath * 0.3, 1.0 + breath * 0.5);
+    }
+
+    // 2. Cử động cánh Trái (F) & Phải (J)
     for (let i = 0; i < 2; i++) {
       const wRig = wingRigs[i];
       const wState = wingsData[i];
       const isPressed = !!(pressedFlags && pressedFlags[i]);
 
-      const flapAngleX = -wRig.side * wState.a;
-      wRig.shoulder.rotation.x = flapAngleX;
-      wRig.shoulder.rotation.y = wRig.side * (physState.isGliding ? 0.06 : -wState.a * 0.16);
+      if (failPose) {
+        // Khi cắm mỏ: Cánh buông thõng bẹp dí dính chặt mặt cỏ
+        wRig.shoulder.rotation.x = -wRig.side * 1.45;
+        wRig.shoulder.rotation.y = -wRig.side * 0.22;
+        wRig.shoulder.rotation.z = 0.35;
+        wRig.elbow.rotation.x = -wRig.side * 0.72;
+        if (!isGhost && wRig.bandMat) {
+          wRig.bandMat.emissiveIntensity = 0.15;
+        }
+      } else {
+        wRig.shoulder.rotation.z = 0;
+        const flapAngleX = -wRig.side * wState.a;
+        wRig.shoulder.rotation.x = flapAngleX;
+        wRig.shoulder.rotation.y = wRig.side * (physState.isGliding ? 0.06 : -wState.a * 0.16);
 
-      const foldAngleX = -wRig.side * Math.max(-0.15, wState.a) * 0.45;
-      wRig.elbow.rotation.x = foldAngleX;
+        const foldAngleX = -wRig.side * Math.max(-0.15, wState.a) * 0.45;
+        wRig.elbow.rotation.x = foldAngleX;
 
-      if (!isGhost && wRig.bandMat) {
-        wRig.bandMat.emissiveIntensity = isPressed ? 1.4 : 0.45;
+        if (!isGhost && wRig.bandMat) {
+          wRig.bandMat.emissiveIntensity = isPressed ? 1.4 : 0.45;
+        }
       }
     }
 
-    // 2. Đuôi, Đầu & Mắt Lồi
-    const dizzyVal = physState.dizzy || 0;
-    tailGroup.rotation.z = Math.sin(timeSec * 14) * 0.10 - (physState.pitch || 0) * 0.40;
-    tailGroup.rotation.y = -(physState.roll || 0) * 0.30;
+    // 3. Đuôi, Đầu & Mắt Lồi (Mắt chữ X khi ngất xỉu)
+    if (failPose) {
+      tailGroup.rotation.z = 0.85 + Math.sin(timeSec * 18) * 0.25;
+      tailGroup.rotation.y = Math.sin(timeSec * 22) * 0.35;
+    } else {
+      tailGroup.rotation.z = Math.sin(timeSec * 14) * 0.10 - (physState.pitch || 0) * 0.40;
+      tailGroup.rotation.y = -(physState.roll || 0) * 0.30;
+    }
 
     crestGroup.rotation.x = Math.sin(timeSec * 6) * 0.2;
 
     for (let i = 0; i < pupils.length; i++) {
       const p = pupils[i];
-      if (failPose || dizzyVal > 0.30) {
-        const spinSpeed = failPose ? 20 : 12 + dizzyVal * 14;
-        const dir = i === 0 ? 1 : -1;
-        p.rotation.x = Math.cos(timeSec * spinSpeed * dir) * 0.35;
-        p.rotation.y = Math.sin(timeSec * spinSpeed * dir) * 0.35;
+      const xEye = xEyes[i];
+      if (failPose) {
+        p.visible = false;
+        if (xEye) xEye.visible = true;
       } else {
-        p.rotation.set(0, 0, 0);
+        p.visible = true;
+        if (xEye) xEye.visible = false;
+        if (dizzyVal > 0.30) {
+          const spinSpeed = 12 + dizzyVal * 14;
+          const dir = i === 0 ? 1 : -1;
+          p.rotation.x = Math.cos(timeSec * spinSpeed * dir) * 0.35;
+          p.rotation.y = Math.sin(timeSec * spinSpeed * dir) * 0.35;
+        } else {
+          p.rotation.set(0, 0, 0);
+        }
       }
     }
 
-    // 3. Cử động chân: Co gọn gàng khi lướt dù, đạp loạn khi vỗ cánh
+    // 4. Vòng sao vàng lấp lánh xoay quanh đầu
+    if (failPose || dizzyVal > 0.42) {
+      haloGroup.visible = true;
+      const orbitSpeed = failPose ? 8.0 : 4.5;
+      for (let i = 0; i < stars.length; i++) {
+        const starAngle = timeSec * orbitSpeed + (i * Math.PI * 2 / stars.length);
+        stars[i].position.set(
+          Math.cos(starAngle) * 0.28,
+          Math.sin(starAngle * 3) * 0.04,
+          Math.sin(starAngle) * 0.28
+        );
+        stars[i].rotation.y = timeSec * 10;
+        stars[i].rotation.x = timeSec * 6;
+      }
+    } else {
+      haloGroup.visible = false;
+    }
+
+    // 5. Cử động chân: Giãy đạp lia lịa khi cắm mỏ, co gọn khi lướt dù
     for (let i = 0; i < legs.length; i++) {
       if (failPose) {
-        legs[i].rotation.z = -0.3 + Math.sin(timeSec * 24 + i * Math.PI) * 0.75;
+        legs[i].rotation.z = -1.15 + Math.sin(timeSec * 24 + i * Math.PI) * 0.65;
       } else if (physState.isGliding) {
         legs[i].rotation.z = -0.75;
       } else {

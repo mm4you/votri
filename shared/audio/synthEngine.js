@@ -330,6 +330,14 @@ export function createSynthEngine({ isMuted = () => false } = {}) {
           delay: 0.04,
           lowpass: [1200, 450],
         });
+        // Tiếng chít éc hoạt hình khi bẹp dí
+        tone({
+          type: 'sine',
+          freq: [820, 260],
+          dur: 0.22,
+          gain: 0.32 * gain,
+          delay: 0.02,
+        });
       }
     },
 
@@ -356,6 +364,41 @@ export function createSynthEngine({ isMuted = () => false } = {}) {
         brassNote(f, chordTime, 1.35, 0.075 * gain);
       }
       brassNote(130.8, chordTime, 1.35, 0.11 * gain);
+    },
+
+    /** Tiếng vịt cao su bóp chít éc vui nhộn khi đụng phao vịt */
+    duckSqueak({ gain = 0.85 } = {}) {
+      tone({
+        type: 'sine',
+        freq: [980, 1380],
+        dur: 0.13,
+        gain: 0.32 * gain,
+      });
+      tone({
+        type: 'sawtooth',
+        freq: [460, 580],
+        dur: 0.15,
+        gain: 0.18 * gain,
+        delay: 0.04,
+        lowpass: [1400, 900],
+      });
+    },
+
+    /** Tiếng phụt nước tăng tốc cực đã khi bơi qua vòng xoáy bọt */
+    turboBoost({ gain = 0.85 } = {}) {
+      burst({
+        dur: 0.45,
+        freq: [350, 1400],
+        filter: 'bandpass',
+        gain: 0.55 * gain,
+        drive: 1.2,
+      });
+      tone({
+        type: 'sine',
+        freq: [280, 720],
+        dur: 0.36,
+        gain: 0.38 * gain,
+      });
     },
   };
 }
