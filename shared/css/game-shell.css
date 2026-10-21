@@ -232,7 +232,7 @@ html[lang="en"] .lang__btn[data-lang="en"] {
   position: relative;
   justify-self: center;
   width: 100%;
-  max-width: 920px;
+  max-width: none;
   min-height: 0;
   overflow: hidden;
   background: linear-gradient(180deg, #dff1ff 0%, #b8e3ff 48%, #0d5c91 52%, #062c4d 100%);
@@ -242,12 +242,7 @@ html[lang="en"] .lang__btn[data-lang="en"] {
   -webkit-tap-highlight-color: transparent;
 }
 
-@media (min-width: 920px) {
-  .game-stage {
-    border-inline: 1px solid var(--line-3);
-    box-shadow: 0 0 60px rgba(10, 40, 70, 0.12);
-  }
-}
+
 
 .game-canvas {
   position: absolute;
