@@ -7,14 +7,14 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { BIRD_GAME_CONFIG, WINGS, BIRD_RANKS, BIRD_SKINS } from './config.js?v=21';
-import { createBirdPhysics } from './physics.js?v=21';
-import { createBirdModel } from './birdModel.js?v=21';
-import { createSkyScene } from './skyScene.js?v=21';
-import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=21';
-import { createGameCache } from '../../shared/storage/portalCache.js?v=21';
-import { GAMES } from '../../shared/ui/gameRegistry.js?v=21';
-import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=21';
+import { BIRD_GAME_CONFIG, WINGS, BIRD_RANKS, BIRD_SKINS } from './config.js?v=22';
+import { createBirdPhysics } from './physics.js?v=22';
+import { createBirdModel } from './birdModel.js?v=22';
+import { createSkyScene } from './skyScene.js?v=22';
+import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=22';
+import { createGameCache } from '../../shared/storage/portalCache.js?v=22';
+import { GAMES } from '../../shared/ui/gameRegistry.js?v=22';
+import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=22';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const lerp = (a, b, t) => a + (b - a) * t;
