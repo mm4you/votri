@@ -1,14 +1,15 @@
 /**
  * @file skyScene.js
- * @description Khung cảnh Bầu Trời & Đường Bay 100m cho Game #2: Chim Béo Tập Bay (Wobbly Wings Bird).
- * - Cổng xuất phát START, Cổng giữa chặng HALFWAY 50m & Tổ ấm vạch đích GOAL 100m
- * - Các mốc cọc khoảng cách 10m, 20m, 30m, 40m, 60m, 70m, 80m, 90m
- * - Đám mây 3D bồng bềnh 2 bên hành lang bay
- * - Hiệu ứng Lông vũ rơi (Feather particles), Bụi cỏ nảy bụng (Grass bounce puffs) và Luồng gió ngược (Wind Gust Streaks)
+ * @description Khung cảnh Bầu Trời, Đường Bay 100m & 4 Chướng Ngại Vật Hài Hước (Goofy Obstacles):
+ * 1. Mốc 22m: Dây phơi quần áo (Clotheslines) - Phơi chăn trắng & tất màu, bay thấp luồn dưới hoặc vỗ cao bay qua!
+ * 2. Mốc 48m: Vòm cây táo trĩu quả (Apple Tree Branch) - Quả táo lúc lỉu, luồn qua khoảng giữa!
+ * 3. Mốc 72m: Bù nhìn rơm giang tay (Goofy Scarecrow) - Đội mũ rơm, lượn né sang trái hoặc phải!
+ * 4. Mốc 88m: Cánh quạt cối xay gió (Windmill Sails) - Cánh quạt quay chậm thử thách căn thời điểm!
+ * 5. Mốc 100m: Tổ ấm đích khổng lồ (Cozy Giant Nest) - Đầy rơm vàng ấm áp chào đón chú chim về đích!
  */
 
-import * as THREE from '../../shared/vendor/three.module.js?v=15';
-import { BIRD_GAME_CONFIG } from './config.js?v=15';
+import * as THREE from '../../shared/vendor/three.module.js?v=16';
+import { BIRD_GAME_CONFIG } from './config.js?v=16';
 
 const rand = (min, max) => min + Math.random() * (max - min);
 
@@ -16,11 +17,11 @@ export function createSkyScene(scene) {
   const Z = BIRD_GAME_CONFIG.TRACK_LENGTH; // 100m
 
   // 1. Ánh sáng bầu trời ban ngày tươi sáng
-  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x86efac, 1.85);
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x86efac, 1.9);
   scene.add(hemiLight);
 
-  const dirLight = new THREE.DirectionalLight(0xffffff, 2.1);
-  dirLight.position.set(-4, 12, 3);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
+  dirLight.position.set(-4, 12, 4);
   scene.add(dirLight, dirLight.target);
 
   // 2. Thảm cỏ xanh dưới mặt đất (y = -0.25)
@@ -33,7 +34,7 @@ export function createSkyScene(scene) {
   scene.add(ground);
 
   const pathStrip = new THREE.Mesh(
-    new THREE.PlaneGeometry(Z + 12, 1.8).rotateX(-Math.PI / 2),
+    new THREE.PlaneGeometry(Z + 12, 2.2).rotateX(-Math.PI / 2),
     new THREE.MeshBasicMaterial({ color: 0xbbf7d0 })
   );
   pathStrip.position.set(Z / 2, -0.24, 0);
@@ -42,7 +43,7 @@ export function createSkyScene(scene) {
   const tickMat = new THREE.MeshBasicMaterial({ color: 0x16a34a });
   for (let x = 0; x <= Z + 10; x += 2.5) {
     const tick = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.14, 2.2).rotateX(-Math.PI / 2),
+      new THREE.PlaneGeometry(0.14, 2.4).rotateX(-Math.PI / 2),
       tickMat
     );
     tick.position.set(x, -0.235, 0);
@@ -77,7 +78,7 @@ export function createSkyScene(scene) {
   const nestMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.75 });
   const createNest = (xPos, yPos) => {
     const nest = new THREE.Mesh(
-      new THREE.TorusGeometry(0.48, 0.15, 12, 28).rotateX(Math.PI / 2),
+      new THREE.TorusGeometry(0.52, 0.16, 14, 28).rotateX(Math.PI / 2),
       nestMat
     );
     nest.position.set(xPos, yPos, 0);
@@ -109,7 +110,7 @@ export function createSkyScene(scene) {
 
   const postMat = new THREE.MeshStandardMaterial({ color: 0xfde047, roughness: 0.4 });
   for (let m = 10; m < Z; m += 10) {
-    if (m === 50) continue; // Mốc 50m dùng cổng vòm lớn HALFWAY
+    if (m === 50) continue;
     const g = new THREE.Group();
     for (const zSide of [-1.75, 1.75]) {
       const pole = new THREE.Mesh(
@@ -151,7 +152,115 @@ export function createSkyScene(scene) {
   createGate(50, 'HALFWAY 50m', '#0284c7');
   createGate(Z, `NEST ${Z}m`, '#e11d48');
 
-  // 6. Hạt Lông Vũ (Feathers)
+  // ==============================================================
+  // 6. CÁC CHƯỚNG NGẠI VẬT HÀI HƯỚC (GOOFY OBSTACLES)
+  // ==============================================================
+  const woodMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.7 });
+  const sheetMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35, side: THREE.DoubleSide });
+  const sockMat1 = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.4 });
+  const sockMat2 = new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.4 });
+  const foliageMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.6 });
+  const appleMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.25 });
+  const strawMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.8 });
+
+  // A. Mốc 22m: Dây phơi quần áo (Clotheslines)
+  const clotheslineGroup = new THREE.Group();
+  clotheslineGroup.position.x = 22;
+
+  // 2 Cọc gỗ 2 bên
+  for (const zSide of [-1.8, 1.8]) {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 2.6, 10).translate(0, 1.1, 0), woodMat);
+    post.position.z = zSide;
+    clotheslineGroup.add(post);
+  }
+  // Dây căng ngang ở y = 1.35
+  const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 3.6, 8).rotateX(Math.PI / 2), woodMat);
+  rope.position.y = 1.35;
+  clotheslineGroup.add(rope);
+
+  // 2 Chiếc chăn trắng phơi trên dây (rơi từ y = 1.35 xuống y = 0.5)
+  for (const zSide of [-0.65, 0.65]) {
+    const sheet = new THREE.Mesh(new THREE.PlaneGeometry(0.65, 0.82), sheetMat);
+    sheet.position.set(0, 0.94, zSide);
+    sheet.rotation.y = -Math.PI / 2;
+    clotheslineGroup.add(sheet);
+  }
+  // Vài chiếc tất màu treo lủng lẳng
+  for (const zSide of [-1.2, 0, 1.2]) {
+    const sock = new THREE.Mesh(new THREE.CapsuleGeometry(0.035, 0.14, 6, 8), zSide < 0 ? sockMat1 : sockMat2);
+    sock.position.set(0, 1.18, zSide);
+    clotheslineGroup.add(sock);
+  }
+  scene.add(clotheslineGroup);
+
+  // B. Mốc 48m: Vòm cây táo trĩu quả (Apple Tree Arch)
+  const treeArchGroup = new THREE.Group();
+  treeArchGroup.position.x = 48;
+  for (const zSide of [-1.7, 1.7]) {
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 2.8, 10).translate(0, 1.2, 0), woodMat);
+    trunk.position.z = zSide;
+    const foliage = new THREE.Mesh(new THREE.SphereGeometry(0.65, 14, 12), foliageMat);
+    foliage.position.set(0, 2.4, zSide);
+    treeArchGroup.add(trunk, foliage);
+  }
+  // Cành ngang bắc qua ở y = 2.1 với chùm lá và táo đỏ rủ xuống
+  const crossBranch = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 3.4, 8).rotateX(Math.PI / 2), woodMat);
+  crossBranch.position.y = 2.05;
+  treeArchGroup.add(crossBranch);
+
+  const appleFoliage = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 2.8, 12).rotateX(Math.PI / 2), foliageMat);
+  appleFoliage.position.y = 2.05;
+  treeArchGroup.add(appleFoliage);
+
+  for (let z = -1.1; z <= 1.1; z += 0.55) {
+    const apple = new THREE.Mesh(new THREE.SphereGeometry(0.065, 10, 8), appleMat);
+    apple.position.set(rand(-0.1, 0.1), 1.72, z);
+    treeArchGroup.add(apple);
+  }
+  scene.add(treeArchGroup);
+
+  // C. Mốc 72m: Bù nhìn rơm ngộ nghĩnh (Goofy Scarecrow)
+  const scarecrowGroup = new THREE.Group();
+  scarecrowGroup.position.set(72, 0, 0.12);
+
+  const sPost = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.2, 8).translate(0, 0.95, 0), woodMat);
+  const sArms = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 1.4, 8).rotateX(Math.PI / 2), woodMat);
+  sArms.position.y = 1.15;
+  const sCoat = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.72, 10), strawMat);
+  sCoat.position.y = 0.82;
+  const sHead = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 10), strawMat);
+  sHead.position.y = 1.35;
+  const sHat = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.22, 12), woodMat);
+  sHat.position.y = 1.52;
+
+  scarecrowGroup.add(sPost, sArms, sCoat, sHead, sHat);
+  scene.add(scarecrowGroup);
+
+  // D. Mốc 88m: Cối xay gió nông trại (Windmill)
+  const windmillGroup = new THREE.Group();
+  windmillGroup.position.set(88, 0, -1.8);
+
+  const wTower = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.65, 3.8, 14).translate(0, 1.7, 0), woodMat);
+  windmillGroup.add(wTower);
+
+  const sailsGroup = new THREE.Group();
+  sailsGroup.position.set(0, 3.1, 0.52);
+
+  const sailMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.5, side: THREE.DoubleSide });
+  for (let b = 0; b < 4; b++) {
+    const blade = new THREE.Mesh(new THREE.PlaneGeometry(0.22, 1.2), sailMat);
+    blade.position.y = 0.6;
+    const bArm = new THREE.Group();
+    bArm.rotation.z = (b * Math.PI) / 2;
+    bArm.add(blade);
+    sailsGroup.add(bArm);
+  }
+  windmillGroup.add(sailsGroup);
+  scene.add(windmillGroup);
+
+  // ==============================================================
+  // 7. HẠT HIỆU ỨNG: Lông Vũ, Bụi Cỏ, Vệt Gió Ngược
+  // ==============================================================
   const feathers = [];
   const featherGeo = new THREE.PlaneGeometry(0.14, 0.06);
   const featherMat = new THREE.MeshBasicMaterial({
@@ -179,7 +288,6 @@ export function createSkyScene(scene) {
   }
   let featherIdx = 0;
 
-  // 7. Bụi cỏ nảy bụng (Grass Puffs) khi chim nảy bụng lướt cỏ
   const grassPuffs = [];
   const grassGeo = new THREE.PlaneGeometry(0.08, 0.08);
   const grassPuffMat = new THREE.MeshBasicMaterial({
@@ -206,7 +314,6 @@ export function createSkyScene(scene) {
   }
   let grassIdx = 0;
 
-  // 8. Vệt gió ngược (Wind Lines)
   const windLines = [];
   const windGeo = new THREE.BoxGeometry(1.6, 0.025, 0.025);
   const windMat = new THREE.MeshBasicMaterial({
@@ -255,6 +362,13 @@ export function createSkyScene(scene) {
     },
 
     update(dt, timeSec, birdX, gustActive = 0) {
+      // Xoay cánh quạt cối xay gió
+      sailsGroup.rotation.z += dt * 0.95;
+
+      // Cỏ & Chăn phơi lay động trong gió
+      clotheslineGroup.rotation.z = Math.sin(timeSec * 4) * 0.04;
+      scarecrowGroup.rotation.z = Math.sin(timeSec * 5) * 0.05;
+
       for (const f of feathers) {
         if (!f.mesh.visible) continue;
         f.age += dt;

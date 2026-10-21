@@ -7,7 +7,7 @@
  * - Cơ chế thở tự nhiên theo chu kỳ sải tay, lượng O2 cân bằng chuẩn xác.
  */
 
-import { LIMBS, SWIM_STYLES } from './config.js?v=15';
+import { LIMBS, SWIM_STYLES } from './config.js?v=16';
 
 const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
 
@@ -224,7 +224,20 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
     state.yaw = clamp(state.yaw + state.wy * dt, -0.42, 0.42);
 
     state.x = Math.max(0, state.x + state.vx * Math.cos(state.yaw) * dt);
-    state.z = clamp(state.z + state.vx * Math.sin(state.yaw) * dt, -1.25, 1.25);
+    state.z += (state.vx * Math.sin(state.yaw) + state.vz) * dt;
+    state.vz *= Math.pow(0.04, dt);
+
+    // Va chạm phao phân làn hồ bơi (Lane Buoy Clatter & Ricochet):
+    // Bơi lệch chém vào phao phân làn sẽ bị nảy ngược lại, vặn người và mất tốc độ
+    if (Math.abs(state.z) > 1.06) {
+      const side = Math.sign(state.z);
+      state.z = side * 1.06;
+      state.vz = -side * 1.8;
+      state.yaw = -side * 0.22;
+      state.vx = Math.max(0, state.vx * 0.82);
+      state.wr += side * 3.8;
+      state.events.push({ type: 'buoyClatter', side: side > 0 ? 1 : -1, x: state.x });
+    }
 
     // Cân bằng Pitch (chúi/ngửa)
     pitchTorque += Q.REAR * netAx * state.y;

@@ -11,7 +11,7 @@
 import * as THREE from '../../shared/vendor/three.module.js';
 import { GLTFLoader } from '../../shared/vendor/GLTFLoader.js';
 import { clone as cloneSkeleton } from '../../shared/vendor/SkeletonUtils.js';
-import { LIMBS, SKINS } from './config.js?v=15';
+import { LIMBS, SKINS } from './config.js?v=16';
 
 const gltfLoader = new GLTFLoader();
 let cachedProcessedGltfPromise = null;

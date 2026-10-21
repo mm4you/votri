@@ -7,14 +7,14 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { BIRD_GAME_CONFIG, WINGS, BIRD_RANKS, BIRD_SKINS } from './config.js?v=15';
-import { createBirdPhysics } from './physics.js?v=15';
-import { createBirdModel } from './birdModel.js?v=15';
-import { createSkyScene } from './skyScene.js?v=15';
-import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=15';
-import { createGameCache } from '../../shared/storage/portalCache.js?v=15';
-import { GAMES } from '../../shared/ui/gameRegistry.js?v=15';
-import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=15';
+import { BIRD_GAME_CONFIG, WINGS, BIRD_RANKS, BIRD_SKINS } from './config.js?v=16';
+import { createBirdPhysics } from './physics.js?v=16';
+import { createBirdModel } from './birdModel.js?v=16';
+import { createSkyScene } from './skyScene.js?v=16';
+import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=16';
+import { createGameCache } from '../../shared/storage/portalCache.js?v=16';
+import { GAMES } from '../../shared/ui/gameRegistry.js?v=16';
+import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=16';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -533,6 +533,9 @@ renderer.setAnimationLoop((nowMs) => {
         } else if (ev.type === 'grassBounce') {
           sky.spawnGrassPuff(s.x, s.roll * 0.1, 5);
           synth.wingFlap({ power: 0.45, left: true });
+        } else if (ev.type === 'obstacleBonk') {
+          sky.spawnFeathers(s.x, s.y, 0, 8);
+          synth.waterSplash(0.85);
         } else if (ev.type === 'gust') {
           showHint('gust', 2.2);
         }

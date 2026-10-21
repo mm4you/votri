@@ -8,14 +8,14 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { GAME_CONFIG, LIMBS, RANKS, SKINS, SWIM_STYLES } from './config.js?v=15';
-import { createSwimPhysics } from './physics.js?v=15';
-import { createSwimmerModel } from './swimmerModel.js?v=15';
-import { createPoolScene } from './poolScene.js?v=15';
-import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=15';
-import { createGameCache } from '../../shared/storage/portalCache.js?v=15';
-import { GAMES } from '../../shared/ui/gameRegistry.js?v=15';
-import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=15';
+import { GAME_CONFIG, LIMBS, RANKS, SKINS, SWIM_STYLES } from './config.js?v=16';
+import { createSwimPhysics } from './physics.js?v=16';
+import { createSwimmerModel } from './swimmerModel.js?v=16';
+import { createPoolScene } from './poolScene.js?v=16';
+import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=16';
+import { createGameCache } from '../../shared/storage/portalCache.js?v=16';
+import { GAMES } from '../../shared/ui/gameRegistry.js?v=16';
+import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=16';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -705,6 +705,11 @@ function processPhysicsEvents() {
       session.strokes++;
       synth.strokeSplash({ power: ev.power, front: ev.front });
       pool.spawnSplash(ev.x, ev.z, ev.power);
+    } else if (ev.type === 'buoyClatter') {
+      synth.slipWarning();
+      synth.strokeSplash({ power: 0.95, front: true });
+      pool.spawnSplash(ev.x, ev.side * 1.1, 0.95);
+      showHint('roll', 1.4);
     } else if (ev.type === 'inhale') {
       synth.breathInhale();
     }

@@ -1,16 +1,15 @@
 /**
  * @file birdModel.js
- * @description Dựng mô hình 3D Chú Chim Béo Tập Bay (Wobbly Wings Bird) cao cấp, cực kỳ đáng yêu:
- * - Dáng thân tròn phúng phính (Chubby Borb), bụng phệ mềm mại, phao câu nhún nhảy.
- * - Cặp cánh 3D đầy đặn (Volumetric Aerodynamic Wings) xếp 3 tầng lông vũ bo tròn mềm mại,
- *   không dùng khối hộp hay mặt phẳng mỏng dính.
- * - Đai cánh thể thao phát sáng & nhãn phím F (Cam) / J (Tím) to rõ, hướng thẳng về camera sau lưng.
- * - Mắt tròn to long lanh có đốm sáng, má hồng phúng phính, mào lông nhún nhảy theo gió.
- * - 4 Loài chim đặc trưng: Bồ Câu Đưa Thư, Vẹt Nhiệt Đới, Cú Mèo Tròn Xoe, Vịt Vàng Bụng Bự.
+ * @description Dựng mô hình 3D Chú Chim Béo Tập Bay (Wobbly Wings Bird) ngộ nghĩnh, hài hước (Goofy Borb):
+ * - Thân tròn phúng phính hình quả trứng (Egg Borb), phao câu vểnh cao nhún nhảy.
+ * - Cặp mắt lồi Googly Eyes to tròn trên đỉnh đầu, tròng mắt đảo ngơ ngác (nhìn từ sau lưng vẫn thấy rõ).
+ * - Cặp cánh 3D dày dặn bo tròn mềm mại (Capsule Aerodynamics) kèm nhãn phím F (Cam) / J (Tím) to rõ.
+ * - Đôi chân ngắn củn chổng phao câu ra phía sau khi bay, quẫy tít mù khi gặp chướng ngại vật.
+ * - 4 Bộ cánh ngộ nghĩnh: Vịt Vàng Mỏ Bẹt, Bồ Câu Ngơ Ngác, Vẹt Nhiệt Đới, Cú Mèo Mắt Lồi.
  */
 
-import * as THREE from '../../shared/vendor/three.module.js?v=15';
-import { WINGS, BIRD_SKINS } from './config.js?v=15';
+import * as THREE from '../../shared/vendor/three.module.js?v=16';
+import { WINGS, BIRD_SKINS } from './config.js?v=16';
 
 function createKeyBadgeSprite(keyText, bgHex) {
   const canvas = document.createElement('canvas');
@@ -40,7 +39,7 @@ function createKeyBadgeSprite(keyText, bgHex) {
     depthTest: false,
   });
   const sprite = new THREE.Sprite(mat);
-  sprite.scale.set(0.25, 0.25, 1);
+  sprite.scale.set(0.28, 0.28, 1);
   sprite.renderOrder = 25;
   return sprite;
 }
@@ -50,7 +49,7 @@ export function createBirdModel({ skinId = 'pigeon', isGhost = false } = {}) {
   const root = new THREE.Group();
   root.rotation.order = 'YXZ';
 
-  const makeMat = (colorHex, roughness = 0.52, emissiveHex = 0x000000, emissiveIntensity = 0) =>
+  const makeMat = (colorHex, roughness = 0.48, emissiveHex = 0x000000, emissiveIntensity = 0) =>
     new THREE.MeshStandardMaterial({
       color: colorHex,
       roughness,
@@ -62,34 +61,34 @@ export function createBirdModel({ skinId = 'pigeon', isGhost = false } = {}) {
       depthWrite: !isGhost,
     });
 
-  const bodyMat = makeMat(skinCfg.bodyColor, 0.55);
+  const bodyMat = makeMat(skinCfg.bodyColor, 0.52);
   const bellyMat = makeMat(skinCfg.bellyColor, 0.58);
-  const wingTipMat = makeMat(skinCfg.wingTipColor, 0.48);
-  const beakMat = makeMat(skinCfg.beakColor, 0.25);
-  const crestMat = makeMat(skinCfg.crestColor, 0.45);
-  const collarMat = makeMat(skinCfg.collarColor || skinCfg.crestColor, 0.40, skinCfg.collarColor, 0.20);
-  const whiteMat = makeMat(0xffffff, 0.18);
-  const pupilMat = makeMat(0x0f172a, 0.06);
-  const blushMat = makeMat(0xf43f5e, 0.45, 0xf43f5e, 0.25);
-  const footMat = makeMat(0xf97316, 0.35);
+  const wingTipMat = makeMat(skinCfg.wingTipColor, 0.42);
+  const beakMat = makeMat(skinCfg.beakColor, 0.22);
+  const crestMat = makeMat(skinCfg.crestColor, 0.35);
+  const collarMat = makeMat(skinCfg.collarColor || skinCfg.crestColor, 0.38, skinCfg.collarColor, 0.20);
+  const whiteMat = makeMat(0xffffff, 0.12);
+  const pupilMat = makeMat(0x0f172a, 0.05);
+  const blushMat = makeMat(0xf43f5e, 0.45, 0xf43f5e, 0.22);
+  const footMat = makeMat(skinCfg.id === 'duck' ? 0xf97316 : 0xfb923c, 0.32);
 
-  // 1. Thân chim hình giọt nước mũm mĩm (Chubby Borb Body)
+  // 1. Thân tròn xoe quả trứng phúng phính (Chubby Borb)
   const bodyGroup = new THREE.Group();
   root.add(bodyGroup);
 
-  const torso = new THREE.Mesh(new THREE.SphereGeometry(0.36, 32, 28), bodyMat);
-  torso.scale.set(1.18, 1.04, 1.02);
+  const torso = new THREE.Mesh(new THREE.SphereGeometry(0.38, 32, 28), bodyMat);
+  torso.scale.set(1.20, 1.06, 1.02);
   bodyGroup.add(torso);
 
-  // Bụng phệ mềm mại ôm phía dưới
-  const belly = new THREE.Mesh(new THREE.SphereGeometry(0.31, 28, 24), bellyMat);
-  belly.scale.set(1.12, 0.90, 0.96);
-  belly.position.set(0.04, -0.09, 0);
+  // Yếm bụng phồng to sáng màu ôm trọn phía trước
+  const belly = new THREE.Mesh(new THREE.SphereGeometry(0.33, 28, 24), bellyMat);
+  belly.scale.set(1.14, 0.92, 0.95);
+  belly.position.set(0.06, -0.08, 0);
   bodyGroup.add(belly);
 
-  // Vòng lông cổ mềm mại
+  // Vòng cổ lông mềm mại
   const collar = new THREE.Mesh(
-    new THREE.TorusGeometry(0.26, 0.028, 14, 32),
+    new THREE.TorusGeometry(0.25, 0.026, 14, 32),
     collarMat
   );
   collar.rotation.y = Math.PI / 2;
@@ -97,192 +96,168 @@ export function createBirdModel({ skinId = 'pigeon', isGhost = false } = {}) {
   collar.position.set(0.24, 0.06, 0);
   bodyGroup.add(collar);
 
-  // Đuôi phao câu xòe 3 cọng lông đầy đặn, chếch nhẹ 20 độ lên trên
-  const tailGroup = new THREE.Group();
-  tailGroup.position.set(-0.35, 0.05, 0);
+  // 2. Mắt lồi Googly Eyes siêu ngố trên đỉnh đầu (nhìn từ sau lưng thấy rõ 2 tròng mắt tròn xoe!)
+  const pupils = [];
+  for (const side of [-1, 1]) {
+    const eyeHolder = new THREE.Group();
+    eyeHolder.position.set(0.18, 0.30, side * 0.16);
 
-  for (let idx = 0; idx < 3; idx++) {
-    const fAngle = (idx - 1) * 0.22;
-    const isCenter = idx === 1;
-    const feather = new THREE.Mesh(
-      new THREE.CapsuleGeometry(0.055, 0.28, 8, 12),
-      isCenter ? crestMat : wingTipMat
+    const eyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.11, 22, 18), whiteMat);
+    eyeHolder.add(eyeWhite);
+
+    const pupilPivot = new THREE.Group();
+    const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.058, 16, 14), pupilMat);
+    pupil.position.set(0.068, 0.02, side * 0.035);
+    pupilPivot.add(pupil);
+
+    const glint = new THREE.Mesh(new THREE.SphereGeometry(0.020, 8, 8), whiteMat);
+    glint.position.set(0.092, 0.045, side * 0.042);
+    pupilPivot.add(glint);
+
+    eyeHolder.add(pupilPivot);
+    bodyGroup.add(eyeHolder);
+    pupils.push(pupilPivot);
+
+    // Mí mắt ngố
+    const lid = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.016, 10, 24), bodyMat);
+    lid.rotation.y = Math.PI / 2;
+    eyeHolder.add(lid);
+
+    // Má hồng tròn xoe
+    const blush = new THREE.Mesh(new THREE.SphereGeometry(0.062, 12, 10), blushMat);
+    blush.scale.set(0.7, 0.5, 0.35);
+    blush.position.set(0.24, 0.10, side * 0.28);
+    bodyGroup.add(blush);
+  }
+
+  // 3. Mào lông ngộ nghĩnh trên đỉnh đầu
+  const crestGroup = new THREE.Group();
+  crestGroup.position.set(0.05, 0.44, 0);
+  for (let i = 0; i < 3; i++) {
+    const tuft = new THREE.Mesh(
+      new THREE.CapsuleGeometry(0.038, 0.14 + i * 0.02, 8, 12),
+      crestMat
     );
-    feather.rotation.z = Math.PI / 2 + 0.25;
-    feather.rotation.y = fAngle;
-    feather.position.set(-0.10, isCenter ? 0.02 : 0, (idx - 1) * 0.075);
-    tailGroup.add(feather);
+    tuft.position.set((i - 1) * 0.042, 0.02, 0);
+    tuft.rotation.z = -0.32 - (i - 1) * 0.22;
+    crestGroup.add(tuft);
+  }
+  bodyGroup.add(crestGroup);
+
+  // 4. Mỏ ngộ nghĩnh (Chubby Beak)
+  if (skinCfg.id === 'duck') {
+    // Mỏ vịt bẹt to đùng siêu hài
+    const duckBill = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.075, 0.11, 0.28, 16).rotateZ(Math.PI / 2),
+      beakMat
+    );
+    duckBill.scale.set(0.85, 0.42, 1.15);
+    duckBill.position.set(0.42, 0.10, 0);
+    bodyGroup.add(duckBill);
+  } else if (skinCfg.id === 'parrot') {
+    const hookBeak = new THREE.Mesh(
+      new THREE.ConeGeometry(0.095, 0.26, 14).rotateZ(-Math.PI / 2),
+      beakMat
+    );
+    hookBeak.position.set(0.40, 0.12, 0);
+    hookBeak.rotation.z = -0.32;
+    bodyGroup.add(hookBeak);
+  } else {
+    const beak = new THREE.Mesh(
+      new THREE.ConeGeometry(0.095, 0.24, 16).rotateZ(-Math.PI / 2),
+      beakMat
+    );
+    beak.position.set(0.42, 0.11, 0);
+    beak.scale.set(1.0, 0.68, 1.15);
+    bodyGroup.add(beak);
+  }
+
+  // 5. Đuôi phao câu vểnh cao nhún nhảy (Perky Fan Tail)
+  const tailGroup = new THREE.Group();
+  tailGroup.position.set(-0.36, 0.06, 0);
+  for (let i = -1; i <= 1; i++) {
+    const tFeather = new THREE.Mesh(
+      new THREE.CapsuleGeometry(0.046, 0.26, 8, 12),
+      i === 0 ? crestMat : wingTipMat
+    );
+    tFeather.rotation.z = Math.PI / 2 + 0.35; // vểnh cao 20 độ
+    tFeather.rotation.y = i * 0.25;
+    tFeather.position.set(-0.08, (1 - Math.abs(i)) * 0.025, i * 0.065);
+    tailGroup.add(tFeather);
   }
   bodyGroup.add(tailGroup);
 
-  // 2. Đầu, Mào Lông, Mỏ & Cặp Mắt Tròn Xoe
-  const headGroup = new THREE.Group();
-  headGroup.position.set(0.33, 0.18, 0);
-  bodyGroup.add(headGroup);
-
-  const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.24, 28, 24), bodyMat);
-  headGroup.add(headMesh);
-
-  // Mào lông đỉnh đầu
-  const crestGroup = new THREE.Group();
-  crestGroup.position.set(-0.02, 0.22, 0);
-
-  if (skinCfg.id === 'duck') {
-    const duckTuft = new THREE.Mesh(new THREE.SphereGeometry(0.065, 14, 12), crestMat);
-    duckTuft.scale.set(0.9, 1.4, 0.8);
-    duckTuft.rotation.z = -0.22;
-    crestGroup.add(duckTuft);
-  } else if (skinCfg.id === 'owl') {
-    for (const side of [-1, 1]) {
-      const earTuft = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.14, 12), crestMat);
-      earTuft.position.set(-0.04, 0.05, side * 0.13);
-      earTuft.rotation.z = -0.28;
-      earTuft.rotation.x = side * 0.35;
-      crestGroup.add(earTuft);
-    }
-  } else {
-    for (let i = 0; i < 3; i++) {
-      const tuft = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.15 + i * 0.02, 12), crestMat);
-      tuft.position.set((i - 1) * 0.045, 0.04, 0);
-      tuft.rotation.z = (1 - i) * 0.22 + 0.18;
-      crestGroup.add(tuft);
-    }
-  }
-  headGroup.add(crestGroup);
-
-  // Mỏ đặc trưng từng loài
-  if (skinCfg.id === 'duck') {
-    const duckBill = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.09, 0.24, 14).rotateZ(Math.PI / 2), beakMat);
-    duckBill.scale.set(0.8, 0.45, 1.0);
-    duckBill.position.set(0.24, -0.02, 0);
-    headGroup.add(duckBill);
-  } else if (skinCfg.id === 'parrot') {
-    const hookBeak = new THREE.Mesh(
-      new THREE.ConeGeometry(0.088, 0.24, 14).rotateZ(-Math.PI / 2),
-      beakMat
-    );
-    hookBeak.position.set(0.23, 0.02, 0);
-    hookBeak.rotation.z = -0.32;
-    headGroup.add(hookBeak);
-  } else {
-    const upperBeak = new THREE.Mesh(
-      new THREE.ConeGeometry(0.075, 0.20, 14).rotateZ(-Math.PI / 2),
-      beakMat
-    );
-    upperBeak.position.set(0.24, 0.015, 0);
-    const lowerBeak = new THREE.Mesh(
-      new THREE.ConeGeometry(0.055, 0.15, 12).rotateZ(-Math.PI / 2),
-      beakMat
-    );
-    lowerBeak.position.set(0.22, -0.035, 0);
-    headGroup.add(upperBeak, lowerBeak);
-  }
-
-  // Mắt tròn to có hồn + Má hồng
-  const pupils = [];
-  for (const side of [-1, 1]) {
-    const eyeBall = new THREE.Mesh(new THREE.SphereGeometry(0.084, 20, 18), whiteMat);
-    eyeBall.position.set(0.12, 0.075, side * 0.165);
-    eyeBall.scale.set(1.0, 1.05, 0.95);
-    headGroup.add(eyeBall);
-
-    const pupilPivot = new THREE.Group();
-    pupilPivot.position.copy(eyeBall.position);
-    const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.044, 14, 12), pupilMat);
-    pupil.position.set(0.055, 0.005, side * 0.032);
-
-    const glint = new THREE.Mesh(new THREE.SphereGeometry(0.015, 8, 8), whiteMat);
-    glint.position.set(0.032, 0.016, side * 0.012);
-    pupil.add(glint);
-
-    pupilPivot.add(pupil);
-    headGroup.add(pupilPivot);
-    pupils.push(pupilPivot);
-
-    const blush = new THREE.Mesh(new THREE.SphereGeometry(0.052, 12, 10), blushMat);
-    blush.scale.set(0.75, 0.52, 0.35);
-    blush.position.set(0.11, -0.04, side * 0.19);
-    headGroup.add(blush);
-  }
-
-  // 3. Đôi chân nhỏ xinh
+  // 6. Đôi chân ngắn củn chổng phao câu ra sau khi bay
   const legs = [];
   for (const side of [-1, 1]) {
-    const legPivot = new THREE.Group();
-    legPivot.position.set(-0.02, -0.26, side * 0.13);
+    const leg = new THREE.Group();
+    leg.position.set(-0.16, -0.28, side * 0.14);
 
-    const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.024, 0.12, 12), bodyMat);
-    thigh.position.set(0, -0.04, 0);
+    const foot = new THREE.Mesh(new THREE.CapsuleGeometry(0.042, 0.12, 8, 10), footMat);
+    foot.rotation.z = Math.PI / 2 - 0.25;
+    foot.position.set(-0.08, 0, 0);
+    leg.add(foot);
 
-    const footGroup = new THREE.Group();
-    footGroup.position.set(0.02, -0.14, 0);
-    for (let t = -1; t <= 1; t++) {
-      const toe = new THREE.Mesh(new THREE.CapsuleGeometry(0.014, 0.07, 6, 8), footMat);
-      toe.rotation.z = Math.PI / 2;
-      toe.rotation.y = t * 0.32;
-      toe.position.set(0.035, 0, t * 0.03);
-      footGroup.add(toe);
-    }
-    legPivot.add(thigh, footGroup);
-    bodyGroup.add(legPivot);
-    legs.push(legPivot);
+    bodyGroup.add(leg);
+    legs.push(leg);
   }
 
-  // 4. CẶP CÁNH 3D ĐẦY ĐẶN (VOLUMETRIC AERODYNAMIC WINGS)
-  // Nhìn từ góc sau lưng cực kỳ mượt mà, lông vũ xếp lớp mềm mại:
+  // 7. CẶP CÁNH BO TRÒN MỀM MẠI (ROUNDED AERODYNAMIC WINGS)
+  // Lông vũ bo tròn capsule xếp tầng, kèm đai phát sáng và nhãn phím F / J to rõ hướng thẳng về camera
   const wingRigs = WINGS.map((cfg) => {
     const side = cfg.side; // -1: Cánh Trái (-Z, Cam F), +1: Cánh Phải (+Z, Tím J)
     const shoulder = new THREE.Group();
-    shoulder.position.set(0.05, 0.07, side * 0.26);
+    shoulder.position.set(0.06, 0.08, side * 0.28);
     bodyGroup.add(shoulder);
 
-    // Bắp cánh trong (Inner Wing) - Khối bầu dục tròn trịa
-    const innerWingMesh = new THREE.Mesh(
-      new THREE.CapsuleGeometry(0.075, 0.28, 12, 16),
+    // Bắp cánh dày dặn
+    const bicep = new THREE.Mesh(
+      new THREE.CapsuleGeometry(0.075, 0.26, 12, 16),
       bodyMat
     );
-    innerWingMesh.rotation.x = Math.PI / 2;
-    innerWingMesh.position.set(0, 0, side * 0.15);
-    shoulder.add(innerWingMesh);
+    bicep.rotation.x = Math.PI / 2;
+    bicep.rotation.y = side * 0.15;
+    bicep.position.set(-0.02, 0, side * 0.14);
+    shoulder.add(bicep);
 
-    // Đai thể thao phát sáng nhận diện phím F / J
+    // Đai đeo cánh thể thao phát sáng
     const bandColor = new THREE.Color(cfg.color);
     const bandMat = new THREE.MeshStandardMaterial({
       color: bandColor,
-      roughness: 0.22,
+      roughness: 0.2,
       emissive: bandColor,
-      emissiveIntensity: isGhost ? 0.1 : 0.65,
+      emissiveIntensity: isGhost ? 0.1 : 0.75,
       transparent: isGhost,
       opacity: isGhost ? 0.3 : 1.0,
     });
-    const bandRing = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.088, 0.088, 0.075, 20).rotateX(Math.PI / 2),
+    const band = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.092, 0.092, 0.075, 20).rotateX(Math.PI / 2),
       bandMat
     );
-    bandRing.position.set(0, 0, side * 0.20);
-    shoulder.add(bandRing);
+    band.position.set(-0.02, 0, side * 0.18);
+    shoulder.add(band);
 
     if (!isGhost) {
       const badge = createKeyBadgeSprite(cfg.keyLabel, cfg.color);
-      badge.position.set(-0.06, 0.18, side * 0.28);
+      badge.position.set(-0.06, 0.20, side * 0.26);
       shoulder.add(badge);
     }
 
-    // Khớp cánh ngoài (Outer Wing Tip)
+    // Khớp cánh ngoài
     const elbow = new THREE.Group();
-    elbow.position.set(0, 0, side * 0.30);
+    elbow.position.set(0, 0, side * 0.28);
     shoulder.add(elbow);
 
-    // 3 Lông vũ dài bo tròn xếp tầng (không phải hộp dẹt)
+    // 3 Lông vũ uốn cong bo tròn
     for (let f = 0; f < 3; f++) {
-      const featherMesh = new THREE.Mesh(
-        new THREE.CapsuleGeometry(0.045 - f * 0.006, 0.32 - f * 0.04, 8, 12),
+      const feather = new THREE.Mesh(
+        new THREE.CapsuleGeometry(0.048 - f * 0.005, 0.30 - f * 0.03, 8, 12),
         f === 0 ? crestMat : wingTipMat
       );
-      featherMesh.rotation.x = Math.PI / 2;
-      featherMesh.rotation.y = side * (0.15 + f * 0.14);
-      featherMesh.position.set(-0.05 * f, 0, side * (0.14 + f * 0.065));
-      elbow.add(featherMesh);
+      feather.rotation.x = Math.PI / 2;
+      feather.rotation.y = side * (0.18 + f * 0.14);
+      feather.position.set(-0.04 * f, 0, side * (0.12 + f * 0.065));
+      elbow.add(feather);
     }
 
     return {
@@ -320,8 +295,7 @@ export function createBirdModel({ skinId = 'pigeon', isGhost = false } = {}) {
     tailGroup.rotation.z = Math.sin(timeSec * 14) * 0.10 - (physState.pitch || 0) * 0.40;
     tailGroup.rotation.y = -(physState.roll || 0) * 0.30;
 
-    headGroup.rotation.z = Math.max(-0.35, Math.min(0.42, -(physState.pitch || 0) * 0.45));
-    headGroup.rotation.x = -(physState.roll || 0) * 0.35;
+    crestGroup.rotation.x = Math.sin(timeSec * 6) * 0.2;
 
     for (let i = 0; i < pupils.length; i++) {
       const p = pupils[i];
@@ -335,7 +309,7 @@ export function createBirdModel({ skinId = 'pigeon', isGhost = false } = {}) {
       }
     }
 
-    // 3. Cử động chân: Co gọn gàng khi lướt dù
+    // 3. Cử động chân: Co gọn gàng khi lướt dù, đạp loạn khi vỗ cánh
     for (let i = 0; i < legs.length; i++) {
       if (failPose) {
         legs[i].rotation.z = -0.3 + Math.sin(timeSec * 24 + i * Math.PI) * 0.75;

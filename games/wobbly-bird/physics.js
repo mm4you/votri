@@ -16,7 +16,7 @@
  *    - 85m - 100m: Tăng tốc về tổ ấm đích!
  */
 
-import { BIRD_PHYSICS_CONFIG as P, WINGS } from './config.js?v=15';
+import { BIRD_PHYSICS_CONFIG as P, WINGS } from './config.js?v=16';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const rand = (min, max) => min + Math.random() * (max - min);
@@ -167,6 +167,37 @@ export function createBirdPhysics() {
     state.vy = clamp(state.vy + netAy * dt, -5.2, 4.5);
     state.x = Math.max(0, state.x + state.vx * dt);
     state.y = clamp(state.y + state.vy * dt, 0, 4.2);
+
+    // KIỂM TRA CHƯỚNG NGẠI VẬT HÀI HƯỚC (GOOFY OBSTACLE BONKS)
+    // Va chạm không làm chết ngay, chỉ nảy lùi 1.2m, làm choáng váng và tung lông vũ vui nhộn
+    if (Math.abs(state.x - 22.0) < 0.55 && state.y > 0.45 && state.y < 1.48 && Math.abs(state.roll) < 1.0) {
+      // Dây phơi quần áo: Luồn dưới hoặc bay cao
+      state.x = 21.2;
+      state.vx = -0.8;
+      state.vy = -0.3;
+      state.dizzy = Math.min(0.85, state.dizzy + 0.35);
+      state.events.push({ type: 'obstacleBonk', name: 'clothesline' });
+    } else if (Math.abs(state.x - 48.0) < 0.65 && state.y > 1.62) {
+      // Vòm cây táo: Bay quá cao sẽ cọ vào chùm táo
+      state.x = 47.2;
+      state.vx = -0.8;
+      state.vy = -0.5;
+      state.dizzy = Math.min(0.85, state.dizzy + 0.35);
+      state.events.push({ type: 'obstacleBonk', name: 'appletree' });
+    } else if (Math.abs(state.x - 72.0) < 0.65 && state.y < 1.85 && state.y > 0.25) {
+      // Bù nhìn rơm ở giữa
+      state.x = 71.2;
+      state.vx = -0.9;
+      state.dizzy = Math.min(0.85, state.dizzy + 0.38);
+      state.events.push({ type: 'obstacleBonk', name: 'scarecrow' });
+    } else if (Math.abs(state.x - 88.0) < 0.85 && state.y > 2.2) {
+      // Cánh quạt cối xay gió trên cao
+      state.x = 87.1;
+      state.vx = -1.0;
+      state.vy = -0.6;
+      state.dizzy = Math.min(0.85, state.dizzy + 0.38);
+      state.events.push({ type: 'obstacleBonk', name: 'windmill' });
+    }
 
     // 4. Cân bằng Roll & Pitch
     const rollStab = bothHeld ? 38.0 : 13.5;

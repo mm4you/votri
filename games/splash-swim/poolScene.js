@@ -8,7 +8,7 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { GAME_CONFIG } from './config.js?v=15';
+import { GAME_CONFIG } from './config.js?v=16';
 
 const rand = (min, max) => min + Math.random() * (max - min);
 
