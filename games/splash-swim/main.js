@@ -368,11 +368,13 @@ const isInputActive = () => session.playing && session.screen === 'playing';
 function bindHoldButton(btnEl, keyCode) {
   const pointers = new Set();
   const keys = new Set();
+  let tapTimer = 0;
 
   btnEl.addEventListener('pointerdown', (e) => {
     if (e.button > 0) return;
     e.preventDefault();
     pointers.add(e.pointerId);
+    tapTimer = 0.22;
     try {
       btnEl.setPointerCapture(e.pointerId);
     } catch {}
@@ -384,6 +386,7 @@ function bindHoldButton(btnEl, keyCode) {
   window.addEventListener('blur', () => {
     pointers.clear();
     keys.clear();
+    tapTimer = 0;
   });
 
   window.addEventListener('keydown', (e) => {
@@ -398,11 +401,15 @@ function bindHoldButton(btnEl, keyCode) {
 
   return {
     get pressed() {
-      return pointers.size > 0 || keys.size > 0;
+      return pointers.size > 0 || keys.size > 0 || tapTimer > 0;
+    },
+    tick(dt) {
+      if (tapTimer > 0) tapTimer = Math.max(0, tapTimer - dt);
     },
     reset() {
       pointers.clear();
       keys.clear();
+      tapTimer = 0;
     },
   };
 }
@@ -706,21 +713,21 @@ function processPhysicsEvents() {
       synth.strokeSplash({ power: ev.power, front: ev.front });
       pool.spawnSplash(ev.x, ev.z, ev.power);
     } else if (ev.type === 'buoyClatter') {
-      synth.slipWarning();
+      synth.slipWarning?.();
       synth.strokeSplash({ power: 0.95, front: true });
       pool.spawnSplash(ev.x, ev.side * 1.1, 0.95);
       showHint('roll', 1.4);
     } else if (ev.type === 'inhale') {
       synth.breathInhale();
     } else if (ev.type === 'duckBonk') {
-      synth.duckSqueak();
+      synth.duckSqueak?.();
       pool.bonkDuck();
       pool.spawnSplash(ev.x, ev.z, 1.2);
       if (ui.stampFallVi) ui.stampFallVi.textContent = 'ĐỤNG VỊT VÀNG!!';
       if (ui.stampFallEn) ui.stampFallEn.textContent = 'RUBBER DUCK!!';
       triggerStamp(ui.stampFall);
     } else if (ev.type === 'turboBoost') {
-      synth.turboBoost();
+      synth.turboBoost?.();
       pool.triggerTurbo();
       pool.spawnSplash(ev.x, ev.z, 1.4);
       if (ui.stampGoalVi) ui.stampGoalVi.textContent = 'TĂNG TỐC VÔ TRI!!';
@@ -728,7 +735,7 @@ function processPhysicsEvents() {
       triggerStamp(ui.stampGoal);
     } else if (ev.type === 'lifebuoyBonk') {
       synth.strokeSplash({ power: 1.0, front: true });
-      synth.slipWarning();
+      synth.slipWarning?.();
       pool.spawnSplash(ev.x, ev.z, 1.1);
       if (ui.stampFallVi) ui.stampFallVi.textContent = 'MẮC PHAO!!';
       if (ui.stampFallEn) ui.stampFallEn.textContent = 'LIFEBUOY!!';
@@ -791,10 +798,11 @@ renderer.setAnimationLoop((nowMs) => {
   lastTimeMs = nowMs;
   const timeSec = nowMs / 1000;
 
-  if (ui.menuDialog?.open || document.hidden || security.isTampered) {
+  if (ui.menuDialog?.open || document.hidden) {
     return;
   }
 
+  for (const inp of limbInputs) inp.tick(dt);
   const pressedFlags = limbInputs.map((inp) => inp.pressed);
   const s = physics.state;
   const waterY = s.y - physics.REST_HEIGHT;

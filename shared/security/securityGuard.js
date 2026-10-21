@@ -122,27 +122,10 @@ export function initSecurityGuard({ onDevToolsChange } = {}) {
     }
   });
 
-  // 3. Phát hiện DevTools mở qua chênh lệch kích thước khung hình (Docked DevTools)
-  let isDevToolsOpen = false;
-  const checkDevTools = () => {
-    const widthGap = window.outerWidth - window.innerWidth > 165;
-    const heightGap = window.outerHeight - window.innerHeight > 165;
-    // Bỏ qua nếu đang ở chế độ phóng to bất thường trên mobile
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const detected = !isMobile && (widthGap || heightGap);
-
-    if (detected !== isDevToolsOpen) {
-      isDevToolsOpen = detected;
-      onDevToolsChange?.(isDevToolsOpen);
-    }
-  };
-
-  window.addEventListener('resize', checkDevTools);
-  setInterval(checkDevTools, 1200);
-
+  // Không can thiệp hoặc chặn vòng lặp game vì kích thước cửa sổ để tránh đứng đơ máy
   return {
     get isTampered() {
-      return isDevToolsOpen;
+      return false;
     },
   };
 }

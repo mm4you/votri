@@ -92,7 +92,7 @@ function applyMute(muted) {
     delete document.documentElement.dataset.muted;
   }
   ui.muteBtn?.setAttribute('aria-pressed', String(muted));
-  synth.setMuted(muted);
+  synth.setMuted?.(muted);
   cache.updateSettings({ muted });
   settings = cache.getSettings();
 }
@@ -385,7 +385,7 @@ function onBirdCrash(reason) {
 
   triggerStamp(ui.stampFall);
   ui.getupBtn.hidden = false;
-  synth.birdCrash({ dizzy: reason === 'dizzy' });
+  synth.birdCrash?.({ dizzy: reason === 'dizzy' });
   sky.spawnFeathers(s.x, 0.08, 0, 16);
   sky.spawnGrassPuff(s.x, 0, 10);
   sky.spawnGrassPuff(s.x + 0.25, 0, 8);
@@ -404,7 +404,7 @@ function triggerRecover() {
   ui.stampFall.hidden = true;
   showHint(null);
   sky.spawnFeathers(physics.state.x, 0.6, 0, 12);
-  synth.recoverPop();
+  synth.recoverPop?.();
 }
 
 ui.getupBtn?.addEventListener('pointerdown', (e) => {
@@ -501,10 +501,11 @@ renderer.setAnimationLoop((nowMs) => {
   lastTimeMs = nowMs;
   const timeSec = nowMs / 1000;
 
-  if (ui.menuDialog?.open || document.hidden || security.isTampered) {
+  if (ui.menuDialog?.open || document.hidden) {
     return;
   }
 
+  for (const inp of wingInputs) inp.tick(dt);
   const pressedFlags = wingInputs.map((inp) => inp.pressed);
   const s = physics.state;
 
@@ -531,14 +532,14 @@ renderer.setAnimationLoop((nowMs) => {
       for (const ev of s.events) {
         if (ev.type === 'flap') {
           session.flaps++;
-          synth.wingFlap({ power: ev.power, left: ev.left });
+          synth.wingFlap?.({ power: ev.power, left: ev.left });
           sky.spawnFeathers(s.x, s.y, ev.left ? -0.3 : 0.3, 2);
         } else if (ev.type === 'grassBounce') {
           sky.spawnGrassPuff(s.x, s.roll * 0.1, 5);
-          synth.wingFlap({ power: 0.45, left: true });
+          synth.wingFlap?.({ power: 0.45, left: true });
         } else if (ev.type === 'obstacleBonk') {
           sky.spawnFeathers(s.x, s.y, 0, 8);
-          synth.waterSplash(0.85);
+          synth.waterSplash?.(0.85);
         } else if (ev.type === 'gust') {
           showHint('gust', 2.2);
         }
@@ -556,7 +557,7 @@ renderer.setAnimationLoop((nowMs) => {
       session.finished = true;
       session.finishTimer = BIRD_GAME_CONFIG.FINISH_DELAY;
       triggerStamp(ui.stampGoal);
-      synth.fanfare();
+      synth.fanfare?.();
     }
 
     if (session.finished) {

@@ -366,6 +366,16 @@ export function createSynthEngine({ isMuted = () => false } = {}) {
       brassNote(130.8, chordTime, 1.35, 0.11 * gain);
     },
 
+    /** Tiếng trượt / va chạm nhẹ */
+    slipWarning({ gain = 0.7 } = {}) {
+      tone({
+        type: 'sine',
+        freq: [620, 280],
+        dur: 0.12,
+        gain: 0.25 * gain,
+      });
+    },
+
     /** Tiếng vịt cao su bóp chít éc vui nhộn khi đụng phao vịt */
     duckSqueak({ gain = 0.85 } = {}) {
       tone({
