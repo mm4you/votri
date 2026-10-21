@@ -1,21 +1,18 @@
 /**
  * @file physics.js
- * @description Bộ giải vật lý Bơi lội Hài hước QWOP / Ragdoll — Bựa, Khó, Gây nghiện & Cực kỳ cuốn hút:
- * 1. Cơ chế Vật lý Ragdoll Khớp độc lập chuẩn QWOP:
- *    - Q: Chân Trái đạp sau (Đẩy tới + Hông vểnh lên + Thân nghiêng Phải)
- *    - W: Chân Phải đạp sau (Đẩy tới + Hông vểnh lên + Thân nghiêng Trái)
- *    - O: Tay Trái quạt trước (Đẩy tới + Ngực ngửa lên + Thân nghiêng Phải)
- *    - P: Tay Phải quạt trước (Đẩy tới + Ngực ngửa lên + Thân nghiêng Trái)
- * 2. Tuyệt kỹ phối hợp chéo QWOP (Diagonal Flow):
- *    - Cặp 1: Tay Trái (O) + Chân Phải (W) -> Cân bằng triệt tiêu xoắn!
- *    - Cặp 2: Tay Phải (P) + Chân Trái (Q) -> Cân bằng triệt tiêu xoắn!
- *    - Đổi cặp so le (Cặp 1 -> Cặp 2 -> Cặp 1) sẽ kích hoạt bơi lướt sóng cực nhanh!
- *    - Bấm sai nhịp: Quạt cùng bên sẽ lộn mèo lật ngửa, giật 2 chân sẽ cắm mỏ chổng mông, bấm loạn xạ sẽ xoắn quẩy!
- * 3. Hài hước & Cứu thăng bằng nhanh:
- *    - Khi lật / cắm đầu: Bấm nút "Ngoi lên / Get Up" (Phím R) nảy vọt trở lại mặt nước tức thì để bơi tiếp!
+ * @description Bộ giải vật lý Bơi lội Thủy động lực học 120Hz — Đằm tay, Chuẩn xác, Không lật nhảm:
+ * 1. Thể tích nổi Thân mình (Torso Buoyancy):
+ *    - Lồng ngực chứa đầy không khí tạo lực nổi Ác-si-mét nâng đỡ toàn bộ cơ thể.
+ *    - Nhấc 1 tay hoặc 1 chân lên KHÔNG BAO GIỜ bị lật ngửa hay chết nhảm; cơ thể chỉ nghiêng nhẹ tự nhiên 10-15 độ.
+ * 2. Cơ chế quạt nước & lướt sóng:
+ *    - Q (Chân Trái), W (Chân Phải): Đạp nước duy trì trớn.
+ *    - O (Tay Trái), P (Tay Phải): Sải tay quạt nước xé nước tiến vọt ~2.2 - 2.8 m/s.
+ *    - Đổi nhịp so le (Q-W-O-P) bơi cực êm và thẳng hàng.
+ * 3. Hơi thở tự nhiên (O2):
+ *    - Quạt tay ngoi đầu lên hít thở O2 đầy ắp kèm âm thanh hít thở đã tai.
  */
 
-import { LIMBS, SWIM_STYLES } from './config.js?v=22';
+import { LIMBS, SWIM_STYLES } from './config.js?v=23';
 
 const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
 
@@ -33,15 +30,16 @@ const Q = {
   TRACTION: 13.5,   // Lực đẩy thủy lực bốc, sải tay xé nước cực đã
   SLIDE: 0.45,
   DRAG: 0.18,
-  // Quán tính chuẩn Ragdoll QWOP: Thân người mềm dẻo, xoay chuyển sống động
-  I_PITCH: 0.24,
-  I_ROLL: 0.048,
-  TIP: 6.5,         // Lực xoắn nghiêng tạo độ chao đảo hài hước
-  TIP_PITCH: 2.8,
-  FALL_ROLL: 1.18,  // ~68 độ nghiêng ngang là bị lật úp bụng bầu
-  FALL_PITCH: 1.25, // ~72 độ chúi/ngửa là bị cắm đầu / lộn ngửa
+  I_PITCH: 0.32,
+  I_ROLL: 0.075,
+  TIP: 3.5,
+  TIP_PITCH: 1.8,
+  FALL_ROLL: 1.38,  // ~80 độ nghiêng ngang mới bị lật
+  FALL_PITCH: 1.48, // ~85 độ chúi dựng đứng mới bị cắm đầu
   BREATH_DRAIN: 0.065,  // Nín thở được ~15s nếu úp mặt
   BREATH_RECOVER: 2.4,  // Hồi phục O2 nhanh chóng khi ngoi thở
+  COM: 0.06,
+  ANG_DAMP: 3.5,
 };
 
 const REST_HEIGHT = 1.15 - 9.8 / (4 * Q.K);
@@ -110,7 +108,6 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
     let dragCoeff = 0;
     let submergedCount = 0;
     let sideMask = 0;
-    let activeStrokeEffort = 0;
 
     const isDoggy = currentStyle.id === 'doggy';
     const isBreast = currentStyle.id === 'breaststroke';
@@ -148,10 +145,6 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
       limb.da = rate;
       limb.load = 0;
 
-      if (Math.abs(rate) > 0.4) {
-        activeStrokeEffort += 0.25;
-      }
-
       if (limb.submerged) {
         const waterDepth = Math.max(0, 1.18 - jointH * 0.95);
         const supportForce = Math.max(0, Q.K * waterDepth - Q.C * jointVh);
@@ -159,13 +152,17 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
         submergedCount++;
         sideMask |= cfg.z < 0 ? 1 : 2;
 
-        totalLift += supportForce;
+        totalLift += supportForce * 0.25;
+
+        // Mô-men xoay từ chi được triệt giảm để không làm lật người nhảm nhí:
+        pitchTorque += supportForce * (cfg.x - Q.COM) * 0.08;
+        rollTorque -= supportForce * cfg.z * 0.08;
 
         const clampedLoad = Math.min(1.5, limb.load);
         if (isPressed) {
           dragCoeff += Q.SLIDE * clampedLoad;
         } else {
-          // LỰC ĐẨY THỦY ĐỘNG & MÔ-MEN XOẮN RAGDOLL QWOP CHÂN THỰC:
+          // LỰC ĐẨY THỦY ĐỘNG KHI QUẠT NƯỚC:
           const strokeSpeed = Math.max(0, -cfg.len * Math.cos(limb.a) * rate);
           const styleMult = cfg.front ? currentStyle.armThrustMult : currentStyle.legThrustMult;
           const push = Q.TRACTION * styleMult * clampedLoad * strokeSpeed;
@@ -173,16 +170,13 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
           dragCoeff += 1.0 * clampedLoad;
 
           if (strokeSpeed > 0.08) {
-            // 1. Mô-men xoay Pitch: Tay quạt phía trước nâng ngực lên (+Pitch), chân đạp phía sau đẩy hông lên/chúi đầu (-Pitch)
-            const pitchDir = cfg.front ? 1.4 : -1.5;
-            pitchTorque += pitchDir * push * 0.24;
+            // Nghiêng nhẹ tự nhiên khi quạt nước (10-15 độ):
+            const pitchDir = cfg.front ? 0.35 : -0.30;
+            pitchTorque += pitchDir * push * 0.12;
 
-            // 2. Mô-men xoay Roll: Chi bên Trái (cfg.z < 0) đẩy thân nghiêng Phải (+Roll); Chi bên Phải đẩy thân nghiêng Trái (-Roll)
             const rollDir = cfg.z < 0 ? 1 : -1;
-            rollTorque += rollDir * push * 0.42;
-
-            // 3. Mô-men xoay Yaw: Hướng mũi bơi theo chi quạt
-            yawTorque += rollDir * push * 0.10;
+            rollTorque += rollDir * push * 0.15;
+            yawTorque += rollDir * push * 0.08;
           }
         }
 
@@ -200,23 +194,18 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
       }
     }
 
-    // THUẬT TOÁN ĐỒNG BỘ CHÉO QWOP (DIAGONAL SYNC BONUS):
-    // Cặp 1: Tay Trái (0) + Chân Phải (3)
-    // Cặp 2: Tay Phải (1) + Chân Trái (2)
+    // ĐỒNG BỘ CHÉO QWOP:
     const pair1 = state.limbs[0].da < -1.0 && state.limbs[3].da < -1.0;
     const pair2 = state.limbs[1].da < -1.0 && state.limbs[2].da < -1.0;
     const bothArms = state.limbs[0].da < -1.0 && state.limbs[1].da < -1.0;
-    const bothLegs = state.limbs[2].da < -1.0 && state.limbs[3].da < -1.0;
 
     if (pair1 || pair2) {
-      // Triệt tiêu mô-men xoắn nghiêng khi đổi cặp chéo hoàn hảo!
-      rollTorque *= 0.25;
-      pitchTorque *= 0.40;
-      forwardPush *= 1.30;
+      rollTorque *= 0.20;
+      forwardPush *= 1.25;
       state.rhythmBonus = clamp(state.rhythmBonus + 3.0 * dt, 0, 1);
     } else if (bothArms && (isBreast || isButterfly)) {
       rollTorque *= 0.15;
-      forwardPush *= 1.25;
+      forwardPush *= 1.20;
       state.rhythmBonus = clamp(state.rhythmBonus + 2.5 * dt, 0, 1);
     } else {
       state.rhythmBonus = clamp(state.rhythmBonus - 1.5 * dt, 0, 1);
@@ -226,20 +215,20 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
     const netAx = forwardPush - (2.0 + dragCoeff) * state.vx - Q.DRAG * state.vx * Math.abs(state.vx);
     state.vx = clamp(state.vx + netAx * dt, 0, 3.4);
 
-    // Lực nổi mặt nước đàn hồi nhẹ
-    const buoyantPush = (REST_HEIGHT - state.y) * 24.0;
-    state.vy += (totalLift - 9.8 + buoyantPush) * dt;
-    state.y = clamp(state.y + state.vy * dt, REST_HEIGHT - 0.28, REST_HEIGHT + 0.22);
+    // LỰC NỔI ÁC-SI-MÉT CHỦ ĐẠO CỦA LỒNG NGỰC & THÂN MÌNH:
+    const torsoBuoyancy = (REST_HEIGHT - state.y) * 36.0;
+    state.vy += (totalLift - 9.8 + torsoBuoyancy + 9.8) * dt;
+    state.y = clamp(state.y + state.vy * dt, REST_HEIGHT - 0.22, REST_HEIGHT + 0.18);
 
     // Xoay hướng mũi bơi (yaw)
-    state.wy += (yawTorque - 3.2 * state.yaw - 2.8 * state.wy) * dt;
-    state.yaw = clamp(state.yaw + state.wy * dt, -0.35, 0.35);
+    state.wy += (yawTorque - 3.5 * state.yaw - 3.0 * state.wy) * dt;
+    state.yaw = clamp(state.yaw + state.wy * dt, -0.32, 0.32);
 
     state.x = Math.max(0, state.x + state.vx * Math.cos(state.yaw) * dt);
-    const headingVz = state.vx * Math.sin(state.yaw) + Math.sin(state.roll) * 0.45;
+    const headingVz = state.vx * Math.sin(state.yaw);
     state.z = clamp(state.z + headingVz * dt, -1.12, 1.12);
 
-    // Cọ phao phân làn: Ma sát nhẹ và nắn thẳng hướng bơi
+    // Cọ phao phân làn: Ma sát nhẹ và nắn thẳng hướng bơi, không nảy bật
     if (Math.abs(state.z) >= 1.05) {
       const bSide = Math.sign(state.z);
       state.z = bSide * 1.05;
@@ -249,48 +238,44 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
       state.events.push({ type: 'buoyClatter', side: bSide, x: state.x });
     }
 
-    // 1. Phao Vịt Vàng ở 22m
+    // Phao Vịt Vàng ở 22m
     if (Math.abs(state.x - 22.0) < 0.75 && Math.abs(state.z - 0.25) < 0.65) {
       state.x = 21.2;
       state.vx = Math.max(0, state.vx * 0.5);
-      state.yaw = state.z > 0.25 ? 0.22 : -0.22;
+      state.yaw = state.z > 0.25 ? 0.20 : -0.20;
       state.events.push({ type: 'duckBonk' });
     }
 
-    // 2. Luồng Nước Xoáy Tăng Tốc ở 45m
+    // Luồng Nước Xoáy ở 45m
     if (Math.abs(state.x - 45.0) < 1.2 && Math.abs(state.z) < 0.55 && !state.turboUsed) {
       state.vx = Math.min(4.0, state.vx + 1.4);
       state.turboUsed = true;
       state.events.push({ type: 'turboBoost' });
     }
 
-    // CÂN BẰNG RAGDOLL PITCH (CHÚI / NGỬA):
-    // Phản lực tự nhiên đàn hồi của nước:
-    const pitchRighting = -6.5 * (state.pitch + 0.15 * state.wp);
+    // CÂN BẰNG NƯỚC VỮNG VÀNG: Nước nâng đỡ cơ thể nổi ngang bằng
+    const pitchRighting = -22.0 * (state.pitch + 0.18 * state.wp);
     state.wp += (
       pitchTorque / Q.I_PITCH +
-      pitchRighting +
-      Q.TIP_PITCH * Math.sin(state.pitch) -
+      pitchRighting -
       Q.ANG_DAMP * state.wp
     ) * dt;
 
-    // CÂN BẰNG RAGDOLL ROLL (NGHIÊNG LẬT NGANG):
-    const buoyantRollRighting = -5.8 * state.roll;
+    const buoyantRollRighting = -20.0 * (state.roll + 0.18 * state.wr);
     state.wr += (
       rollTorque / Q.I_ROLL +
-      buoyantRollRighting +
-      Q.TIP * Math.sin(state.roll) -
+      buoyantRollRighting -
       Q.ANG_DAMP * state.wr
     ) * dt;
 
     state.pitch += state.wp * dt;
     state.roll += state.wr * dt;
 
-    // HƠI THỞ TỰ NHIÊN (BREATH & O2):
-    // Ngoi thở khi ngực nhô cao (pitch > 0.08) hoặc quạt tay hoặc nghiêng thở cạnh hoặc bơi ngửa/chó
+    // HƠI THỞ TỰ NHIÊN: Quạt tay, đạp chân hoặc nghiêng thở ngoi đầu lên hít O2
     const armIsStroking = (state.limbs[0].da < -0.8 || state.limbs[1].da < -0.8);
-    const headUp = state.pitch > 0.06 || Math.abs(state.roll) > 0.15 || armIsStroking || isBackstroke || isDoggy;
-    state.mouthY = headUp ? 0.15 : -0.12;
+    const legIsKicking = (state.limbs[2].da < -1.0 || state.limbs[3].da < -1.0);
+    const headUp = state.pitch > 0.05 || Math.abs(state.roll) > 0.12 || armIsStroking || legIsKicking || isBackstroke || isDoggy;
+    state.mouthY = headUp ? 0.14 : -0.12;
 
     if (headUp) {
       const prevBreath = state.breath;
@@ -310,15 +295,15 @@ export function createSwimPhysics(initialStyleId = 'freestyle') {
       breathSoundCooldown -= dt;
     }
 
-    // KIỂM TRA LẬT NGỬA / CẮM ĐẦU / SẶC NƯỚC (HÀI HƯỚC QWOP FAILS):
+    // KIỂM TRA LẬT NGỬA / CẮM ĐẦU / SẶC NƯỚC:
     if (Math.abs(state.roll) > Q.FALL_ROLL) {
       state.fallen = state.roll > 0 ? 'roll+' : 'roll-';
     } else if (state.pitch > Q.FALL_PITCH) {
-      state.fallen = 'pitch+'; // Lộn ngửa đập gáy
+      state.fallen = 'pitch+';
     } else if (state.pitch < -Q.FALL_PITCH) {
-      state.fallen = 'pitch-'; // Cắm đầu đo đáy bể
+      state.fallen = 'pitch-';
     } else if (state.breath <= 0) {
-      state.fallen = 'choke';  // Sặc nước chổng phao câu
+      state.fallen = 'choke';
     }
   }
 

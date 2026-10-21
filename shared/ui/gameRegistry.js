@@ -1,6 +1,6 @@
 /**
  * @file gameRegistry.js
- * @description Danh mục các trò chơi trong cổng game Vô Tri.
+ * @description Danh mục các trò chơi trong cổng game Vô Tri Hub.
  */
 
 export const GAMES = [
@@ -9,17 +9,17 @@ export const GAMES = [
     slug: 'splash-swim',
     path: '/games/splash-swim/index.html',
     hue: 205,
-    badgeVi: '100m • 4 phím',
-    badgeEn: '100m • 4 keys',
+    badgeVi: '100m • 4 phím QWOP',
+    badgeEn: '100m • 4 keys QWOP',
     titleVi: 'Kình Ngư Vô Tri',
-    titleEn: 'Splash-Stroke',
-    descVi: 'Mỗi phím điều khiển một tay (O, P) hoặc một chân (Q, W). Có đủ 5 kiểu bơi từ Bơi Sải, Bơi Ếch tới Bơi Chó — quạt lệch nhịp là lật ngửa uống nước hồ ngay!',
-    descEn: 'One key per arm (O, P) and leg (Q, W) across 5 swimming styles. Lose your rhythm for a second and you will flip over and swallow pool water.',
+    titleEn: 'Splash-Stroke Swimmer',
+    descVi: 'Mỗi phím điều khiển một chi: Chân (Q, W) và Tay (O, P). Phối hợp nhịp chéo nhịp nhàng để xé nước tiến vọt về đích 100m!',
+    descEn: 'One key per limb: Legs (Q, W) and Arms (O, P). Alternate diagonals smoothly to surge across the 100m lane!',
     controls: [
-      { key: 'Q', labelVi: 'Chân trái', labelEn: 'L.Leg', color: '#e66900' },
-      { key: 'W', labelVi: 'Chân phải', labelEn: 'R.Leg', color: '#00b04d' },
-      { key: 'O', labelVi: 'Tay trái', labelEn: 'L.Arm', color: '#e356a2' },
-      { key: 'P', labelVi: 'Tay phải', labelEn: 'R.Arm', color: '#2e91ff' },
+      { key: 'Q', labelVi: 'Chân trái', labelEn: 'L.Leg', color: '#ea580c' },
+      { key: 'W', labelVi: 'Chân phải', labelEn: 'R.Leg', color: '#16a34a' },
+      { key: 'O', labelVi: 'Tay trái', labelEn: 'L.Arm', color: '#db2777' },
+      { key: 'P', labelVi: 'Tay phải', labelEn: 'R.Arm', color: '#0284c7' },
     ],
     unit: 's',
     lowerIsBetter: true,
@@ -30,15 +30,16 @@ export const GAMES = [
     slug: 'wobbly-bird',
     path: '/games/wobbly-bird/index.html',
     hue: 38,
-    badgeVi: '100m • 2 phím',
-    badgeEn: '100m • 2 keys',
+    badgeVi: '100m • 3 phím F, J, Space',
+    badgeEn: '100m • 3 keys F, J, Space',
     titleVi: 'Chim Béo Tập Bay',
-    titleEn: 'Wobbly Wings',
-    descVi: 'Chỉ dùng 2 phím F (cánh trái) và J (cánh phải) để vỗ cánh bay 100m về tổ. Đập so le giữ nhịp tiến nhanh, giữ cả 2 phím để căng cánh Lướt Dù xẻ gió ổn định.',
-    descEn: 'Flap your left wing (F) and right wing (J) across 100m. Alternate wings to surge forward, and hold both keys together to glide through wind gusts.',
+    titleEn: 'Wobbly Wings Bird',
+    descVi: 'Đập Cánh Trái (F) và Cánh Phải (J) so le để giữ thăng bằng cho chú chim béo. Bấm SPACE bắn trứng phản lực cứu nguy khẩn cấp!',
+    descEn: 'Alternate Left Wing (F) and Right Wing (J) to balance your chubby bird. Press SPACE to drop an emergency egg rocket!',
     controls: [
-      { key: 'F', labelVi: 'Cánh trái', labelEn: 'L.Wing', color: '#ff7b00' },
-      { key: 'J', labelVi: 'Cánh phải', labelEn: 'R.Wing', color: '#8b5cf6' },
+      { key: 'F', labelVi: 'Cánh trái', labelEn: 'L.Wing', color: '#ea580c' },
+      { key: 'SPACE', labelVi: 'Trứng phản lực', labelEn: 'Egg Rocket', color: '#ca8a04' },
+      { key: 'J', labelVi: 'Cánh phải', labelEn: 'R.Wing', color: '#9333ea' },
     ],
     unit: 's',
     lowerIsBetter: true,
