@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file swimmerModel.js
  * @description Dựng Vận Động Viên Bơi Lội 3D (Nam Mặc Quần Bơi Đùi / Nữ Mặc Đồ Bơi Liền Mảnh):
  * 1. Khớp nối mịn: chỉ làm mịn Pháp Tuyến (Normals) tại các điểm tiếp giáp giữa Beta_Surface và
@@ -11,7 +11,7 @@
 import * as THREE from '../../shared/vendor/three.module.js';
 import { GLTFLoader } from '../../shared/vendor/GLTFLoader.js';
 import { clone as cloneSkeleton } from '../../shared/vendor/SkeletonUtils.js';
-import { LIMBS, SKINS } from './config.js?v=12';
+import { LIMBS, SKINS } from './config.js?v=15';
 
 const gltfLoader = new GLTFLoader();
 let cachedProcessedGltfPromise = null;

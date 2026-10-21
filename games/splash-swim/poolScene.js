@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file poolScene.js
  * @description Hồ bơi Olympic 100m 3D với Mặt Nước Trong Xanh (Crystal Turquoise Water) & Vân Nắng Caustics:
  * - Đáy hồ lát gạch xanh ngọc kèm lớp Vân Nắng Nước (Animated Caustics) chuyển động lung linh
@@ -8,7 +8,7 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { GAME_CONFIG } from './config.js?v=12';
+import { GAME_CONFIG } from './config.js?v=15';
 
 const rand = (min, max) => min + Math.random() * (max - min);
 

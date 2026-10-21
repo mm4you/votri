@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file main.js
  * @description Vòng lặp chính Game #1: Kình Ngư Vô Tri (Splash-Stroke Swimmer - 100m Olympic).
  * - Góc nhìn mặc định: Chính diện Sau Lưng (Straight Behind-the-Back, không chéo)
@@ -8,14 +8,14 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { GAME_CONFIG, LIMBS, RANKS, SKINS, SWIM_STYLES } from './config.js?v=12';
-import { createSwimPhysics } from './physics.js?v=12';
-import { createSwimmerModel } from './swimmerModel.js?v=12';
-import { createPoolScene } from './poolScene.js?v=12';
-import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=12';
-import { createGameCache } from '../../shared/storage/portalCache.js?v=12';
-import { GAMES } from '../../shared/ui/gameRegistry.js?v=12';
-import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=12';
+import { GAME_CONFIG, LIMBS, RANKS, SKINS, SWIM_STYLES } from './config.js?v=15';
+import { createSwimPhysics } from './physics.js?v=15';
+import { createSwimmerModel } from './swimmerModel.js?v=15';
+import { createPoolScene } from './poolScene.js?v=15';
+import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=15';
+import { createGameCache } from '../../shared/storage/portalCache.js?v=15';
+import { GAMES } from '../../shared/ui/gameRegistry.js?v=15';
+import { initSecurityGuard, createRateLimiter } from '../../shared/security/securityGuard.js?v=15';
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const lerp = (a, b, t) => a + (b - a) * t;

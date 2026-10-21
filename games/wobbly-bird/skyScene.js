@@ -1,19 +1,19 @@
 /**
  * @file skyScene.js
- * @description Khung cảnh Bầu Trời & Đường Bay 50m cho Game #2: Chim Béo Tập Bay (Wobbly Wings Bird).
- * Tối ưu cho cả Góc Nhìn Chính Diện Sau Lưng (Straight Behind-the-Back) và Góc Nhìn Ngang:
- * - Tổ chim xuất phát (START) & Tổ chim ấm áp tại vạch đích (GOAL 50m)
- * - Các vòng tròn/cổng mốc khoảng cách 10m, 20m, 30m, 40m trên không trung
- * - Đám mây bồng bềnh 2 bên hành lang bay, luồng gió ngược (Wind Gust Streaks) và Lông vũ rơi khi vỗ mạnh/va chạm.
+ * @description Khung cảnh Bầu Trời & Đường Bay 100m cho Game #2: Chim Béo Tập Bay (Wobbly Wings Bird).
+ * - Cổng xuất phát START, Cổng giữa chặng HALFWAY 50m & Tổ ấm vạch đích GOAL 100m
+ * - Các mốc cọc khoảng cách 10m, 20m, 30m, 40m, 60m, 70m, 80m, 90m
+ * - Đám mây 3D bồng bềnh 2 bên hành lang bay
+ * - Hiệu ứng Lông vũ rơi (Feather particles), Bụi cỏ nảy bụng (Grass bounce puffs) và Luồng gió ngược (Wind Gust Streaks)
  */
 
-import * as THREE from '../../shared/vendor/three.module.js?v=4';
-import { BIRD_GAME_CONFIG } from './config.js?v=4';
+import * as THREE from '../../shared/vendor/three.module.js?v=15';
+import { BIRD_GAME_CONFIG } from './config.js?v=15';
 
 const rand = (min, max) => min + Math.random() * (max - min);
 
 export function createSkyScene(scene) {
-  const Z = BIRD_GAME_CONFIG.TRACK_LENGTH;
+  const Z = BIRD_GAME_CONFIG.TRACK_LENGTH; // 100m
 
   // 1. Ánh sáng bầu trời ban ngày tươi sáng
   const hemiLight = new THREE.HemisphereLight(0xffffff, 0x86efac, 1.85);
@@ -23,7 +23,7 @@ export function createSkyScene(scene) {
   dirLight.position.set(-4, 12, 3);
   scene.add(dirLight, dirLight.target);
 
-  // 2. Thảm cỏ xanh dưới mặt đất (y = -0.25) với vạch kẻ mỗi 2.5m để dễ ước lượng độ cao và tốc độ
+  // 2. Thảm cỏ xanh dưới mặt đất (y = -0.25)
   const grassMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.85 });
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(Z + 90, 24).rotateX(-Math.PI / 2),
@@ -49,7 +49,7 @@ export function createSkyScene(scene) {
     scene.add(tick);
   }
 
-  // 3. Hàng rào cọc gỗ & Đám mây 3D hai bên hành lang bay (-Z và +Z)
+  // 3. Đám mây 3D hai bên hành lang bay (-Z và +Z)
   const cloudMat = new THREE.MeshStandardMaterial({
     color: 0xffffff,
     roughness: 0.6,
@@ -73,11 +73,11 @@ export function createSkyScene(scene) {
     }
   }
 
-  // 4. Tổ Chim Xuất Phát (x = 0) & Tổ Chim Đích (x = 50m)
+  // 4. Tổ Chim Xuất Phát (x = 0) & Tổ Chim Đích (x = 100m)
   const nestMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.75 });
   const createNest = (xPos, yPos) => {
     const nest = new THREE.Mesh(
-      new THREE.TorusGeometry(0.45, 0.14, 12, 24).rotateX(Math.PI / 2),
+      new THREE.TorusGeometry(0.48, 0.15, 12, 28).rotateX(Math.PI / 2),
       nestMat
     );
     nest.position.set(xPos, yPos, 0);
@@ -86,7 +86,7 @@ export function createSkyScene(scene) {
   createNest(0, 0.65);
   createNest(Z, 0.85);
 
-  // 5. Cổng / Băng rôn khoảng cách (START, 10m, 20m, 30m, 40m, GOAL 50m) quay mặt về Camera Sau Lưng
+  // 5. Cổng & Biển báo mốc khoảng cách
   const makeBannerMesh = (text, w, h, bg, fg) => {
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(w * 128);
@@ -109,6 +109,7 @@ export function createSkyScene(scene) {
 
   const postMat = new THREE.MeshStandardMaterial({ color: 0xfde047, roughness: 0.4 });
   for (let m = 10; m < Z; m += 10) {
+    if (m === 50) continue; // Mốc 50m dùng cổng vòm lớn HALFWAY
     const g = new THREE.Group();
     for (const zSide of [-1.75, 1.75]) {
       const pole = new THREE.Mesh(
@@ -147,9 +148,10 @@ export function createSkyScene(scene) {
   };
 
   createGate(-1.2, 'START', '#d97706');
-  createGate(Z, 'NEST 50m', '#e11d48');
+  createGate(50, 'HALFWAY 50m', '#0284c7');
+  createGate(Z, `NEST ${Z}m`, '#e11d48');
 
-  // 6. Hạt Lông Vũ (Feathers) & Vệt Gió Ngược (Wind Gust Lines)
+  // 6. Hạt Lông Vũ (Feathers)
   const feathers = [];
   const featherGeo = new THREE.PlaneGeometry(0.14, 0.06);
   const featherMat = new THREE.MeshBasicMaterial({
@@ -177,17 +179,44 @@ export function createSkyScene(scene) {
   }
   let featherIdx = 0;
 
-  // Vệt gió ngược (Wind Lines)
+  // 7. Bụi cỏ nảy bụng (Grass Puffs) khi chim nảy bụng lướt cỏ
+  const grassPuffs = [];
+  const grassGeo = new THREE.PlaneGeometry(0.08, 0.08);
+  const grassPuffMat = new THREE.MeshBasicMaterial({
+    color: 0x16a34a,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.85,
+  });
+  for (let i = 0; i < 25; i++) {
+    const gp = new THREE.Mesh(grassGeo, grassPuffMat.clone());
+    gp.visible = false;
+    scene.add(gp);
+    grassPuffs.push({
+      mesh: gp,
+      age: 1,
+      life: 1,
+      x: 0,
+      y: 0,
+      z: 0,
+      vx: 0,
+      vy: 0,
+      vz: 0,
+    });
+  }
+  let grassIdx = 0;
+
+  // 8. Vệt gió ngược (Wind Lines)
   const windLines = [];
-  const windGeo = new THREE.BoxGeometry(1.4, 0.025, 0.025);
+  const windGeo = new THREE.BoxGeometry(1.6, 0.025, 0.025);
   const windMat = new THREE.MeshBasicMaterial({
     color: 0xe0f2fe,
     transparent: true,
     opacity: 0.0,
   });
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 20; i++) {
     const wl = new THREE.Mesh(windGeo, windMat);
-    wl.position.set(rand(0, 15), rand(0.4, 3.4), rand(-1.8, 1.8));
+    wl.position.set(rand(0, 20), rand(0.4, 3.4), rand(-1.8, 1.8));
     scene.add(wl);
     windLines.push(wl);
   }
@@ -210,6 +239,21 @@ export function createSkyScene(scene) {
       }
     },
 
+    spawnGrassPuff(x, z, count = 6) {
+      for (let i = 0; i < count; i++) {
+        const p = grassPuffs[grassIdx++ % grassPuffs.length];
+        p.age = 0;
+        p.life = rand(0.35, 0.65);
+        p.x = x + rand(-0.15, 0.15);
+        p.y = 0.05;
+        p.z = z + rand(-0.15, 0.15);
+        p.vx = rand(-0.8, -0.2);
+        p.vy = rand(0.5, 1.4);
+        p.vz = rand(-0.6, 0.6);
+        p.mesh.visible = true;
+      }
+    },
+
     update(dt, timeSec, birdX, gustActive = 0) {
       for (const f of feathers) {
         if (!f.mesh.visible) continue;
@@ -228,12 +272,28 @@ export function createSkyScene(scene) {
         f.mesh.material.opacity = 0.9 * (1 - t);
       }
 
-      windMat.opacity = gustActive * 0.72;
+      for (const p of grassPuffs) {
+        if (!p.mesh.visible) continue;
+        p.age += dt;
+        if (p.age >= p.life) {
+          p.mesh.visible = false;
+          continue;
+        }
+        const t = p.age / p.life;
+        p.vy -= 3.2 * dt;
+        p.x += p.vx * dt;
+        p.y = Math.max(0, p.y + p.vy * dt);
+        p.z += p.vz * dt;
+        p.mesh.position.set(p.x, p.y, p.z);
+        p.mesh.material.opacity = 0.85 * (1 - t);
+      }
+
+      windMat.opacity = gustActive * 0.75;
       if (gustActive > 0.01) {
         for (const wl of windLines) {
-          wl.position.x -= 14 * dt;
+          wl.position.x -= 15 * dt;
           if (wl.position.x < birdX - 4) {
-            wl.position.x = birdX + rand(5, 14);
+            wl.position.x = birdX + rand(5, 16);
             wl.position.y = rand(0.3, 3.4);
             wl.position.z = rand(-1.6, 1.6);
           }

@@ -236,16 +236,16 @@
   </main>
 
 <script type="module">
-  import { GAMES } from './shared/ui/gameRegistry.js?v=12';
-  import { portalSettings } from './shared/storage/portalCache.js?v=12';
-  import { initI18n, onLangChange, getLang } from './shared/i18n/i18n.js?v=12';
-  import { initSecurityGuard } from './shared/security/securityGuard.js?v=12';
+  import { GAMES } from './shared/ui/gameRegistry.js?v=15';
+  import { portalSettings } from './shared/storage/portalCache.js?v=15';
+  import { initI18n, onLangChange, getLang } from './shared/i18n/i18n.js?v=15';
+  import { initSecurityGuard } from './shared/security/securityGuard.js?v=15';
 
   initSecurityGuard();
   initI18n();
 
   const gridEl = document.getElementById('hub-grid');
-  const LENGTH = { 'splash-swim': '100m', 'wobbly-bird': '50m' };
+  const LENGTH = { 'splash-swim': '100m', 'wobbly-bird': '100m' };
 
   function renderCards() {
     const en = getLang() === 'en';
