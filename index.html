@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="vi" data-title-vi="Vô Tri - trò chơi nhỏ" data-title-en="Vo Tri - tiny games">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vô Tri - trò chơi nhỏ</title>
+  <style>
+    :root {
+      --bg: #eef5f9;
+      --paper: #ffffff;
+      --text: #18222c;
+      --text-2: #4b5d70;
+      --text-3: #6c7f93;
+      --line: rgba(20, 40, 60, 0.1);
+      --line-2: rgba(20, 40, 60, 0.18);
+      --brand: oklch(0.58 0.17 215);
+      --font-sans: 'M PLUS Rounded 1c', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    html[lang="vi"] .t-en,
+    html[lang="en"] .t-vi { display: none !important; }
+
+    /* Thanh trên cùng giống hệt thanh trong trang game */
+    .bar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: rgba(255, 255, 255, 0.94);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .brand__mark {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--brand);
+    }
+    .lang {
+      display: inline-flex;
+      padding: 3px;
+      gap: 2px;
+      border-radius: 10px;
+      background: var(--paper);
+      border: 1px solid var(--line-2);
+    }
+    .lang button {
+      border: 0;
+      background: none;
+      font: 700 11px var(--font-mono);
+      color: var(--text-3);
+      height: 26px;
+      padding: 0 9px;
+      border-radius: 7px;
+      cursor: pointer;
+    }
+    html[lang="vi"] .lang [data-lang="vi"],
+    html[lang="en"] .lang [data-lang="en"] {
+      background: var(--text);
+      color: #fff;
+    }
+
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+    .intro {
+      margin-bottom: 28px;
+    }
+    .intro h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      font-weight: 800;
+    }
+    .intro p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-2);
+      max-width: 560px;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .game {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      transition: border-color .2s, transform .2s;
+    }
+    .game:hover {
+      border-color: var(--line-2);
+      transform: translateY(-2px);
+    }
+    .game__shot {
+      position: relative;
+      min-height: 240px;
+      background: #cfe8f0 center / cover no-repeat;
+    }
+    .game__body {
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .game__top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .game__name {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+    }
+    .game__len {
+      font: 700 12px var(--font-mono);
+      color: var(--text-3);
+      white-space: nowrap;
+    }
+    .game__desc {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-2);
+    }
+    .keys {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .key {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      color: var(--text-2);
+    }
+    .key kbd {
+      display: inline-grid;
+      place-items: center;
+      min-width: 30px;
+      height: 30px;
+      padding: 0 6px;
+      border-radius: 8px;
+      font: 800 14px var(--font-mono);
+      color: #fff;
+      background: var(--k);
+      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.22);
+    }
+    .game__foot {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--text-3);
+    }
+    .play {
+      display: inline-flex;
+      align-items: center;
+      height: 36px;
+      padding: 0 16px;
+      border-radius: 10px;
+      background: var(--brand);
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
+    }
+    .game:hover .play { filter: brightness(1.06); }
+
+    footer {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 20px 32px;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    @media (max-width: 720px) {
+      .game { grid-template-columns: 1fr; }
+      .game__shot { min-height: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bar">
+    <a class="brand" href="./index.html"><span class="brand__mark" aria-hidden="true"></span>Vô Tri</a>
+    <div class="lang" role="group" aria-label="Language">
+      <button class="lang__btn" type="button" data-lang="vi" aria-pressed="true">VI</button>
+      <button class="lang__btn" type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <h1>
+        <span class="t-vi">Chọn một trò để chơi</span>
+        <span class="t-en">Pick a game</span>
+      </h1>
+      <p>
+        <span class="t-vi">Mỗi trò chỉ dùng vài phím, mỗi phím điều khiển một bộ phận. Nghe thì dễ, chơi thì không.</span>
+        <span class="t-en">Each game uses only a few keys, one per body part. Sounds easy, plays otherwise.</span>
+      </p>
+    </section>
+
+    <div class="list" id="hub-grid"></div>
+  </main>
+
+  <footer>
+    <span class="t-vi">Chạy trực tiếp trên trình duyệt. Kỷ lục được lưu trên máy của bạn.</span>
+    <span class="t-en">Runs in your browser. Records are saved on your device.</span>
+  </footer>
+
+<script type="module">
+  import { GAMES } from './shared/ui/gameRegistry.js?v=12';
+  import { portalSettings } from './shared/storage/portalCache.js?v=12';
+  import { initI18n, onLangChange, getLang } from './shared/i18n/i18n.js?v=12';
+  import { initSecurityGuard } from './shared/security/securityGuard.js?v=12';
+
+  initSecurityGuard();
+  initI18n();
+
+  const gridEl = document.getElementById('hub-grid');
+  const LENGTH = { 'splash-swim': '100m', 'wobbly-bird': '50m' };
+
+  function renderCards() {
+    const en = getLang() === 'en';
+    gridEl.innerHTML = GAMES.map((g) => {
+      const best = portalSettings.getGameBest(g.id);
+      const record = best
+        ? (en ? `Best: ${best.time.toFixed(2)}s` : `Kỷ lục: ${best.time.toFixed(2)}s`)
+        : (en ? 'No record yet' : 'Chưa có kỷ lục');
+      const keys = g.controls.map((c) => `
+        <span class="key"><kbd style="--k:${c.color}">${c.key}</kbd>${en ? c.labelEn : c.labelVi}</span>
+      `).join('');
+
+      return `
+        <a class="game" href=".${g.path}">
+          <div class="game__shot" style="background-image:url('./shared/img/${g.id}.png')" role="img"
+               aria-label="${en ? g.titleEn : g.titleVi}"></div>
+          <div class="game__body">
+            <div class="game__top">
+              <h2 class="game__name">${en ? g.titleEn : g.titleVi}</h2>
+              <span class="game__len">${LENGTH[g.id] || ''}</span>
+            </div>
+            <p class="game__desc">${en ? g.descEn : g.descVi}</p>
+            <div class="keys">${keys}</div>
+            <div class="game__foot">
+              <span>${record}</span>
+              <span class="play">${en ? 'Play' : 'Chơi'}</span>
+            </div>
+          </div>
+        </a>
+      `;
+    }).join('');
+  }
+
+  renderCards();
+  onLangChange(renderCards);
+</script>
+</body>
+</html>

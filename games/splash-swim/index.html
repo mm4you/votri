@@ -1,0 +1,307 @@
+﻿<!doctype html>
+<html lang="vi" data-title-vi="Kình Ngư Vô Tri (100m) | Splash-Stroke Swimmer" data-title-en="Splash-Stroke Swimmer (100m) | Vo Tri Game">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kình Ngư Vô Tri (100m) | Splash-Stroke Swimmer</title>
+  <link rel="stylesheet" href="../../shared/css/game-shell.css?v=12">
+  <script type="module" src="./main.js?v=12"></script>
+</head>
+<body>
+<div class="game" style="--hue:205">
+  <header class="game-bar">
+    <div class="game-bar__left">
+      <button class="game-bar__menu" type="button" aria-haspopup="dialog" aria-controls="game-menu">
+        <span class="game-bar__burger" aria-hidden="true"></span>
+        <span><span class="t-vi" lang="vi">Danh mục</span><span class="t-en" lang="en">Games</span></span>
+      </button>
+      <button class="game-bar__cam" type="button" data-cam-toggle>
+        <span data-cam-vi class="t-vi" lang="vi">Góc Sau Lưng</span>
+        <span data-cam-en class="t-en" lang="en">Behind View</span>
+      </button>
+    </div>
+
+    <h1 class="game-bar__title">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="game-bar__name">
+        <span class="t-vi" lang="vi">Kình Ngư Vô Tri (100m)</span>
+        <span class="t-en" lang="en">Splash-Stroke Swimmer (100m)</span>
+      </span>
+    </h1>
+
+    <div class="game-bar__end">
+      <button class="game-bar__mute" type="button" aria-pressed="false" title="Mute / Unmute">
+        <svg class="game-bar__icon game-bar__icon--on" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9h3l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/>
+          <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>
+        </svg>
+        <svg class="game-bar__icon game-bar__icon--off" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9h3l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/>
+          <path d="M16 9.5l5 5M21 9.5l-5 5"/>
+        </svg>
+      </button>
+      <div class="lang" role="group" aria-label="Ngôn ngữ / Language">
+        <button class="lang__btn" type="button" data-lang="vi" lang="vi" aria-pressed="true">VI</button>
+        <button class="lang__btn" type="button" data-lang="en" lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="game-stage">
+    <div class="game-hypoxia" aria-hidden="true"></div>
+
+    <!-- HUD -->
+    <div class="hud" data-hud hidden>
+      <div class="hud__left">
+        <div class="hud__side">
+          <span class="hud__name">
+            <span class="dot"></span>
+            <span data-hud-style-vi class="t-vi" lang="vi">BƠI SẢI</span>
+            <span data-hud-style-en class="t-en" lang="en">FREESTYLE</span>
+          </span>
+          <div class="hud__score">
+            <span class="hud__label"><span class="t-vi" lang="vi">CÒN LẠI</span><span class="t-en" lang="en">REMAIN</span></span>
+            <div>
+              <span class="hud__pts" data-score="remain">100</span>
+              <span class="hud__unit">m</span>
+            </div>
+          </div>
+          <!-- Bộ đổi nhanh 5 Kiểu Bơi ngay khi đang chơi -->
+          <div class="skin-picker" data-hud-style-picker style="margin-top:4px;pointer-events:auto"></div>
+        </div>
+
+        <div class="hud__breath-card" data-breath-card>
+          <div class="hud__breath-head">
+            <span class="hud__label">
+              <span class="t-vi" lang="vi">HƠI THỞ (O₂)</span>
+              <span class="t-en" lang="en">BREATH (O₂)</span>
+            </span>
+            <span class="hud__breath-status">
+              <span data-breath-status-vi class="t-vi" lang="vi">ĐANG THỞ</span>
+              <span data-breath-status-en class="t-en" lang="en">BREATHING</span>
+            </span>
+          </div>
+          <div class="meter">
+            <div class="meter__fill" data-breath-fill style="--v:1"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud__pair">
+        <div class="hud__timer">
+          <span class="hud__label"><span class="t-vi" lang="vi">THỜI GIAN</span><span class="t-en" lang="en">TIME</span></span>
+          <span class="hud__time" data-time>0.0</span>
+        </div>
+        <div class="hud__timer">
+          <span class="hud__label"><span class="t-vi" lang="vi">LẬT / SẶC</span><span class="t-en" lang="en">FALLS</span></span>
+          <span class="hud__time" data-falls>0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contextual Hints -->
+    <p class="game-hint" data-hint="start" hidden>
+      <span class="t-vi" lang="vi">Nhấn giữ để vươn tay / co chân. Nhả phím để quạt nước đẩy đi! Nhấc trống 1 bên sẽ lật ngửa ngay!</span>
+      <span class="t-en" lang="en">Hold to lift/reach a limb. Let go to stroke & kick! Leaving one side unsupported flips you over!</span>
+    </p>
+    <p class="game-hint game-hint--warn" data-hint="breath" hidden>
+      <span class="t-vi" lang="vi">Sắp hết hơi! Giữ thăng bằng và quạt tay nhịp nhàng để đầu nhô lên thở!</span>
+      <span class="t-en" lang="en">Low oxygen! Balance your strokes so your head stays at the surface!</span>
+    </p>
+    <p class="game-hint game-hint--warn" data-hint="tip" hidden>
+      <span class="t-vi" lang="vi">Sắp lật ngửa! Hạ tay/chân xuống nước ngay (nhả phím ra)!</span>
+      <span class="t-en" lang="en">Tipping over! Put a limb down into the water (let go)!</span>
+    </p>
+    <p class="game-hint" data-hint="choke" hidden>
+      <span class="t-vi" lang="vi">Bạn bị sặc nước do chìm đầu quá lâu! Nhấn R để ngoi lên.</span>
+      <span class="t-en" lang="en">You choked underwater! Press R to recover.</span>
+    </p>
+    <p class="game-hint" data-hint="roll" hidden>
+      <span class="t-vi" lang="vi">Bạn bị lật nghiêng! Không được nhấc trống cả 1 bên Trái hoặc Phải quá lâu.</span>
+      <span class="t-en" lang="en">You toppled sideways! Always keep at least one limb supporting each side.</span>
+    </p>
+    <p class="game-hint" data-hint="pitch" hidden>
+      <span class="t-vi" lang="vi">Bạn bị lộn nhào cắm đầu! Đừng giật cả 4 nút cùng một lúc.</span>
+      <span class="t-en" lang="en">You flipped over! Moving all 4 limbs at once causes massive recoil.</span>
+    </p>
+
+    <!-- Recover Action Button -->
+    <button class="game-action" type="button" data-getup hidden>
+      <span class="t-vi" lang="vi">Đứng dậy / Ngoi lên</span>
+      <span class="t-en" lang="en">Get up / Recover</span>
+      <span class="btn__sub only-pc">R</span>
+    </button>
+
+    <!-- Stamps -->
+    <div class="game-stamp game-stamp--top" data-stamp="fall" hidden>
+      <span data-stamp-fall-vi class="t-vi" lang="vi">LẬT NGỬA!!</span>
+      <span data-stamp-fall-en class="t-en" lang="en">OOPS!!</span>
+    </div>
+    <div class="game-stamp game-stamp--go" data-stamp="goal" hidden>
+      <span class="t-vi" lang="vi">CHẠM ĐÍCH 100M!!</span>
+      <span class="t-en" lang="en">FINISH 100M!!</span>
+    </div>
+
+    <!-- 4-Limb Control Pad (Q, W = Legs | O, P = Arms) -->
+    <div class="game-pad game-pad--4">
+      <button class="game-btn" type="button" data-limb="2" style="--c:oklch(0.66 0.17 50)">
+        <span><span class="t-vi" lang="vi">Chân Trái</span><span class="t-en" lang="en">Left Leg</span></span>
+        <small><span class="t-vi" lang="vi">Đạp sau</span><span class="t-en" lang="en">hind kick</span></small>
+        <span class="game-btn__key only-pc">Q</span>
+      </button>
+      <button class="game-btn" type="button" data-limb="3" style="--c:oklch(0.60 0.16 150)">
+        <span><span class="t-vi" lang="vi">Chân Phải</span><span class="t-en" lang="en">Right Leg</span></span>
+        <small><span class="t-vi" lang="vi">Đạp sau</span><span class="t-en" lang="en">hind kick</span></small>
+        <span class="game-btn__key only-pc">W</span>
+      </button>
+      <button class="game-btn" type="button" data-limb="0" style="--c:oklch(0.60 0.20 350)">
+        <span><span class="t-vi" lang="vi">Tay Trái</span><span class="t-en" lang="en">Left Arm</span></span>
+        <small><span class="t-vi" lang="vi">Quạt trước</span><span class="t-en" lang="en">front pull</span></small>
+        <span class="game-btn__key only-pc">O</span>
+      </button>
+      <button class="game-btn" type="button" data-limb="1" style="--c:oklch(0.58 0.17 250)">
+        <span><span class="t-vi" lang="vi">Tay Phải</span><span class="t-en" lang="en">Right Arm</span></span>
+        <small><span class="t-vi" lang="vi">Quạt trước</span><span class="t-en" lang="en">front pull</span></small>
+        <span class="game-btn__key only-pc">P</span>
+      </button>
+    </div>
+
+    <!-- Start Screen -->
+    <div class="game-screen" data-screen="start">
+      <div class="game-screen__panel">
+        <h2 class="game-screen__title">
+          <span class="t-vi" lang="vi">Kình Ngư Vô Tri (100m)</span>
+          <span class="t-en" lang="en">Splash-Stroke Swimmer (100m)</span>
+        </h2>
+        <p class="game-screen__lead">
+          <span class="t-vi" lang="vi">Điều khiển từng tay (O, P) và từng chân (Q, W) để bơi vượt 100m về đích. Vật lý cực kỳ dễ lật ngửa, cắm đầu và sặc nước!</span>
+          <span class="t-en" lang="en">Move each arm (O, P) and leg (Q, W) with its own button to swim 100m. It is notoriously hard!</span>
+        </p>
+
+        <div>
+          <div class="hud__label" style="margin-bottom:6px">
+            <span class="t-vi" lang="vi">CHỌN KIỂU BƠI (5 CHẾ ĐỘ: SẢI, BƯỚM, ẾCH, CHÓ, NGỬA)</span>
+            <span class="t-en" lang="en">SELECT SWIMMING STYLE (5 MODES)</span>
+          </div>
+          <div class="skin-picker" data-style-picker></div>
+        </div>
+
+        <div>
+          <div class="hud__label" style="margin-bottom:6px">
+            <span class="t-vi" lang="vi">CHỌN VẬN ĐỘNG VIÊN 3D (LƯU CACHE)</span>
+            <span class="t-en" lang="en">SELECT 3D SWIMMER (CACHED)</span>
+          </div>
+          <div class="skin-picker" data-skin-picker></div>
+        </div>
+
+        <p class="game-tip">
+          <span data-style-tip-vi class="t-vi" lang="vi">Mẹo Bơi Sải: Luân phiên chéo cặp (Tay Trái O + Chân Phải W) và (Tay Phải P + Chân Trái Q) thật nhanh. Bấm cả 4 nút cùng lúc sẽ bị giật lộn nhào!</span>
+          <span data-style-tip-en class="t-en" lang="en">Freestyle Tip: Swap diagonal pairs (Left Arm O + Right Leg W) and (Right Arm P + Left Leg Q) quickly. Moving all 4 at once rocks you over!</span>
+        </p>
+
+        <div class="pb-row">
+          <span data-pb-badge>Kỷ lục cá nhân: Chưa có</span>
+          <button type="button" class="pb-clear" data-clear-cache>
+            <span class="t-vi" lang="vi">Xóa Cache</span>
+            <span class="t-en" lang="en">Reset</span>
+          </button>
+        </div>
+
+        <button class="btn btn--solid" type="button" data-action="start">
+          <span class="t-vi" lang="vi">Bắt đầu bơi 100m</span>
+          <span class="t-en" lang="en">Start 100m Swim</span>
+          <span class="btn__sub only-pc">Space</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div class="game-screen game-screen--peek" data-screen="result" hidden>
+      <div class="game-screen__panel">
+        <span class="new-record-pill" data-new-record hidden>
+          <span class="t-vi" lang="vi">KỶ LỤC CÁ NHÂN MỚI!</span>
+          <span class="t-en" lang="en">NEW PERSONAL BEST!</span>
+        </span>
+
+        <h2 class="game-screen__title game-screen__title--result">
+          <span class="is-win" data-result="win" hidden>
+            <span class="t-vi" lang="vi">CHẠM ĐÍCH 100M!!</span>
+            <span class="t-en" lang="en">FINISHED 100M!!</span>
+          </span>
+          <span class="is-lose" data-result="lose" hidden>
+            <span class="t-vi" lang="vi">HẾT THỜI GIAN!</span>
+            <span class="t-en" lang="en">TIME'S UP!</span>
+          </span>
+        </h2>
+
+        <p class="game-screen__text">
+          <span data-reason="timeup" hidden>
+            <span class="t-vi" lang="vi">Quá 150 giây! Bạn mới bơi được </span>
+            <span class="t-en" lang="en">You didn't make it in 150s. You got </span>
+            <b data-dist>0</b><span> m.</span>
+          </span>
+        </p>
+
+        <div class="game-tally" data-tally>
+          <div class="game-tally__head">
+            <p class="game-tally__rank">
+              <span data-rank="legend" hidden><span class="t-vi" lang="vi">KÌNH NGƯ HUYỀN THOẠI</span><span class="t-en" lang="en">AQUA LEGEND</span></span>
+              <span data-rank="race" hidden><span class="t-vi" lang="vi">VĐV OLYMPIC</span><span class="t-en" lang="en">OLYMPIC SWIMMER</span></span>
+              <span data-rank="pony" hidden><span class="t-vi" lang="vi">RÁI CÁ VUI NHỘN</span><span class="t-en" lang="en">HAPPY OTTER</span></span>
+              <span data-rank="foal" hidden><span class="t-vi" lang="vi">PHAO TẬP BƠI</span><span class="t-en" lang="en">POOL NOODLE</span></span>
+            </p>
+            <p class="game-tally__total">
+              <b data-final="you">0.0</b><span>s</span>
+            </p>
+          </div>
+
+          <ul class="game-tally__items">
+            <li style="--c:oklch(0.60 0.16 150)">
+              <span class="game-tally__label"><span class="t-vi" lang="vi">TỐC ĐỘ ĐỈNH</span><span class="t-en" lang="en">TOP SPEED</span></span>
+              <b><i data-top>0</i><small>km/h</small></b>
+            </li>
+            <li style="--c:oklch(0.60 0.20 25)">
+              <span class="game-tally__label"><span class="t-vi" lang="vi">LẬT / SẶC</span><span class="t-en" lang="en">FALLS</span></span>
+              <b><i data-final-falls>0</i><small>x</small></b>
+            </li>
+            <li style="--c:oklch(0.60 0.15 240)">
+              <span class="game-tally__label"><span class="t-vi" lang="vi">NHỊP QUẠT/ĐẠP</span><span class="t-en" lang="en">STROKES</span></span>
+              <b><i data-steps>0</i></b>
+            </li>
+          </ul>
+        </div>
+
+        <div class="game-screen__actions">
+          <button class="btn btn--solid" type="button" data-action="start">
+            <span class="t-vi" lang="vi">Bơi lại lần nữa</span>
+            <span class="t-en" lang="en">Play Again</span>
+            <span class="btn__sub only-pc">Space</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<dialog class="game-menu" id="game-menu" aria-label="Menu">
+  <div class="game-menu__panel">
+    <div class="game-menu__head">
+      <a href="../../index.html">
+        <span class="dot"></span>
+        <span>Vô Tri Game Portal</span>
+      </a>
+      <button class="esc-btn" type="button" data-action="close">ESC</button>
+    </div>
+    <nav>
+      <ul class="game-menu__list" data-menu-games></ul>
+    </nav>
+    <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--line-3);font-size:12px;color:var(--text-sub)">
+      <a href="../../index.html" style="color:var(--text-2);font-weight:700;text-decoration:none">
+        <span class="t-vi" lang="vi">Về Trang Chủ Chọn Game</span>
+        <span class="t-en" lang="en">Back to Game Hub</span>
+      </a>
+    </div>
+  </div>
+</dialog>
+</body>
+</html>

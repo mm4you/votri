@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="vi" data-title-vi="Chim Béo Tập Bay | Wobbly Wings Bird" data-title-en="Wobbly Wings Bird | Vo Tri Game">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Chim Béo Tập Bay | Wobbly Wings Bird</title>
+  <link rel="stylesheet" href="../../shared/css/game-shell.css?v=9">
+  <script type="module" src="./main.js?v=9"></script>
+</head>
+<body>
+<div class="game" style="--hue:35">
+  <header class="game-bar">
+    <div class="game-bar__left">
+      <button class="game-bar__menu" type="button" aria-haspopup="dialog" aria-controls="game-menu">
+        <span class="game-bar__burger" aria-hidden="true"></span>
+        <span><span class="t-vi" lang="vi">Danh mục</span><span class="t-en" lang="en">Games</span></span>
+      </button>
+      <button class="game-bar__cam" type="button" data-cam-toggle>
+        <span data-cam-vi class="t-vi" lang="vi">Góc Sau Lưng</span>
+        <span data-cam-en class="t-en" lang="en">Behind View</span>
+      </button>
+    </div>
+
+    <h1 class="game-bar__title">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="game-bar__name">
+        <span class="t-vi" lang="vi">Chim Béo Tập Bay</span>
+        <span class="t-en" lang="en">Wobbly Wings Bird</span>
+      </span>
+    </h1>
+
+    <div class="game-bar__end">
+      <button class="game-bar__mute" type="button" aria-pressed="false" title="Mute / Unmute">
+        <svg class="game-bar__icon game-bar__icon--on" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9h3l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/>
+          <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>
+        </svg>
+        <svg class="game-bar__icon game-bar__icon--off" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9h3l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/>
+          <path d="M16 9.5l5 5M21 9.5l-5 5"/>
+        </svg>
+      </button>
+      <div class="lang" role="group" aria-label="Ngôn ngữ / Language">
+        <button class="lang__btn" type="button" data-lang="vi" lang="vi" aria-pressed="true">VI</button>
+        <button class="lang__btn" type="button" data-lang="en" lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="game-stage" style="background:linear-gradient(180deg,#bae6fd 0%,#e0f2fe 62%,#86efac 68%,#22c55e 100%)">
+    <div class="hud" data-hud hidden>
+      <div class="hud__left">
+        <div class="hud__side">
+          <span class="hud__name">
+            <span class="dot"></span>
+            <span class="t-vi" lang="vi">ĐƯỜNG BAY</span>
+            <span class="t-en" lang="en">DISTANCE</span>
+          </span>
+          <div class="hud__score">
+            <span class="hud__label"><span class="t-vi" lang="vi">CÒN LẠI</span><span class="t-en" lang="en">REMAIN</span></span>
+            <div>
+              <span class="hud__pts" data-score="remain">50</span>
+              <span class="hud__unit">m</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud__breath-card" data-dizzy-card>
+          <div class="hud__breath-head">
+            <span class="hud__label">
+              <span class="t-vi" lang="vi">THĂNG BẰNG</span>
+              <span class="t-en" lang="en">STABILITY</span>
+            </span>
+            <span class="hud__breath-status">
+              <span data-dizzy-status-vi class="t-vi" lang="vi">TỈNH TÁO</span>
+              <span data-dizzy-status-en class="t-en" lang="en">STEADY</span>
+            </span>
+          </div>
+          <div class="meter">
+            <div class="meter__fill" data-dizzy-fill style="--v:1"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud__pair">
+        <div class="hud__timer">
+          <span class="hud__label"><span class="t-vi" lang="vi">THỜI GIAN</span><span class="t-en" lang="en">TIME</span></span>
+          <span class="hud__time" data-time>0.0</span>
+        </div>
+        <div class="hud__timer">
+          <span class="hud__label"><span class="t-vi" lang="vi">CẮM MỎ</span><span class="t-en" lang="en">CRASHES</span></span>
+          <span class="hud__time" data-falls>0</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="game-hint" data-hint="start" hidden>
+      <span class="t-vi" lang="vi">Nhấn giữ rồi nhả F (Cánh Trái) và J (Cánh Phải) để vỗ cánh. Giữ CẢ 2 NÚT (F + J) để căng cánh Lướt Dù cân bằng!</span>
+      <span class="t-en" lang="en">Hold & release F (Left Wing) and J (Right Wing) to flap. Hold BOTH (F + J) to Glide and stabilize!</span>
+    </p>
+    <p class="game-hint game-hint--warn" data-hint="gust" hidden>
+      <span class="t-vi" lang="vi">Gió ngược đang thổi mạnh! Nhấn giữ cả 2 cánh (F + J) để lướt đằm qua cơn gió!</span>
+      <span class="t-en" lang="en">Headwind gust! Hold both wings (F + J) to glide steadily through the wind!</span>
+    </p>
+    <p class="game-hint" data-hint="dizzy" hidden>
+      <span class="t-vi" lang="vi">Đập lệch cánh làm bạn xoáy ốc rối loạn tiền đình! Nhấn R để bay lại.</span>
+      <span class="t-en" lang="en">Uneven flapping made you dizzy! Press R to recover.</span>
+    </p>
+    <p class="game-hint" data-hint="crash" hidden>
+      <span class="t-vi" lang="vi">Cắm mỏ xuống đất! Nhấn R để rút mỏ bay tiếp.</span>
+      <span class="t-en" lang="en">Faceplanted into the grass! Press R to get back up.</span>
+    </p>
+
+    <button class="game-action" type="button" data-getup hidden>
+      <span class="t-vi" lang="vi">Rút mỏ đứng dậy</span>
+      <span class="t-en" lang="en">Pull Beak Up</span>
+      <span class="btn__sub only-pc">R</span>
+    </button>
+
+    <div class="game-stamp game-stamp--top" data-stamp="fall" hidden>
+      <span data-stamp-fall-vi class="t-vi" lang="vi">CẮM MỎ!!</span>
+      <span data-stamp-fall-en class="t-en" lang="en">FACEPLANT!!</span>
+    </div>
+    <div class="game-stamp game-stamp--go" data-stamp="goal" hidden>
+      <span class="t-vi" lang="vi">VỀ TỔ AN TOÀN!!</span>
+      <span class="t-en" lang="en">HOME SWEET NEST!!</span>
+    </div>
+
+    <!-- 2-Wing Control Pad (F = Left Wing | J = Right Wing) -->
+    <div class="game-pad game-pad--2">
+      <button class="game-btn" type="button" data-wing="0" style="--c:oklch(0.68 0.18 45)">
+        <span><span class="t-vi" lang="vi">Cánh Trái</span><span class="t-en" lang="en">Left Wing</span></span>
+        <small><span class="t-vi" lang="vi">Giữ 2 nút = Lướt dù</span><span class="t-en" lang="en">Hold both = Glide</span></small>
+        <span class="game-btn__key only-pc">F</span>
+      </button>
+      <button class="game-btn" type="button" data-wing="1" style="--c:oklch(0.60 0.20 295)">
+        <span><span class="t-vi" lang="vi">Cánh Phải</span><span class="t-en" lang="en">Right Wing</span></span>
+        <small><span class="t-vi" lang="vi">Giữ 2 nút = Lướt dù</span><span class="t-en" lang="en">Hold both = Glide</span></small>
+        <span class="game-btn__key only-pc">J</span>
+      </button>
+    </div>
+
+    <div class="game-screen" data-screen="start">
+      <div class="game-screen__panel">
+        <h2 class="game-screen__title">
+          <span class="t-vi" lang="vi">Chim Béo Tập Bay (2 Nút)</span>
+          <span class="t-en" lang="en">Wobbly Wings Bird (2 Buttons)</span>
+        </h2>
+        <p class="game-screen__lead">
+          <span class="t-vi" lang="vi">Chỉ dùng 2 phím F (Cánh Trái) và J (Cánh Phải) để giữ thăng bằng cho chú chim béo bay 50m về tổ!</span>
+          <span class="t-en" lang="en">Use only F (Left Wing) and J (Right Wing) to flap and glide 50m back to your nest!</span>
+        </p>
+
+        <div>
+          <div class="hud__label" style="margin-bottom:6px">
+            <span class="t-vi" lang="vi">CHỌN CHÚ CHIM (LƯU CACHE)</span>
+            <span class="t-en" lang="en">SELECT BIRD (CACHED)</span>
+          </div>
+          <div class="skin-picker" data-skin-picker></div>
+        </div>
+
+        <p class="game-tip">
+          <span class="t-vi" lang="vi">Mẹo: Đập 1 cánh quá nhiều sẽ làm chim nghiêng xoáy ốc! Nhấn giữ CẢ 2 NÚT (F + J) cùng lúc để dang cánh Lướt Dù lấy lại thăng bằng.</span>
+          <span class="t-en" lang="en">Tip: Flapping only one wing rolls you into a corkscrew! Hold BOTH (F + J) together to spread your wings and Glide!</span>
+        </p>
+
+        <div class="pb-row">
+          <span data-pb-badge>Kỷ lục cá nhân: Chưa có</span>
+          <button type="button" class="pb-clear" data-clear-cache>
+            <span class="t-vi" lang="vi">Xóa Cache</span>
+            <span class="t-en" lang="en">Reset</span>
+          </button>
+        </div>
+
+        <button class="btn btn--solid" type="button" data-action="start">
+          <span class="t-vi" lang="vi">Cất cánh bay</span>
+          <span class="t-en" lang="en">Take Off</span>
+          <span class="btn__sub only-pc">Space</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="game-screen game-screen--peek" data-screen="result" hidden>
+      <div class="game-screen__panel">
+        <span class="new-record-pill" data-new-record hidden>
+          <span class="t-vi" lang="vi">KỶ LỤC CÁ NHÂN MỚI!</span>
+          <span class="t-en" lang="en">NEW PERSONAL BEST!</span>
+        </span>
+
+        <h2 class="game-screen__title game-screen__title--result">
+          <span class="is-win" data-result="win" hidden>
+            <span class="t-vi" lang="vi">VỀ TỔ THÀNH CÔNG!!</span>
+            <span class="t-en" lang="en">MADE IT TO THE NEST!!</span>
+          </span>
+          <span class="is-lose" data-result="lose" hidden>
+            <span class="t-vi" lang="vi">HẾT THỜI GIAN!</span>
+            <span class="t-en" lang="en">TIME'S UP!</span>
+          </span>
+        </h2>
+
+        <p class="game-screen__text">
+          <span data-reason="timeup" hidden>
+            <span class="t-vi" lang="vi">Quá 90 giây! Bạn mới bay được </span>
+            <span class="t-en" lang="en">You didn't make it in 90s. You flew </span>
+            <b data-dist>0</b><span> m.</span>
+          </span>
+        </p>
+
+        <div class="game-tally" data-tally>
+          <div class="game-tally__head">
+            <p class="game-tally__rank">
+              <span data-rank="legend" hidden><span class="t-vi" lang="vi">ĐẠI BÀNG TỐC HÀNH</span><span class="t-en" lang="en">SUPERSONIC EAGLE</span></span>
+              <span data-rank="race" hidden><span class="t-vi" lang="vi">BỒ CÂU ĐƯA THƯ</span><span class="t-en" lang="en">EXPRESS PIGEON</span></span>
+              <span data-rank="pony" hidden><span class="t-vi" lang="vi">CHIM BÉO VẪY CÁNH</span><span class="t-en" lang="en">CHUBBY SPARROW</span></span>
+              <span data-rank="foal" hidden><span class="t-vi" lang="vi">GÀ CÔNG NGHIỆP</span><span class="t-en" lang="en">GROUNDED CHICKEN</span></span>
+            </p>
+            <p class="game-tally__total">
+              <b data-final="you">0.0</b><span>s</span>
+            </p>
+          </div>
+
+          <ul class="game-tally__items">
+            <li style="--c:oklch(0.60 0.16 150)">
+              <span class="game-tally__label"><span class="t-vi" lang="vi">TỐC ĐỘ ĐỈNH</span><span class="t-en" lang="en">TOP SPEED</span></span>
+              <b><i data-top>0</i><small>km/h</small></b>
+            </li>
+            <li style="--c:oklch(0.60 0.20 25)">
+              <span class="game-tally__label"><span class="t-vi" lang="vi">CẮM MỎ</span><span class="t-en" lang="en">CRASHES</span></span>
+              <b><i data-final-falls>0</i><small>x</small></b>
+            </li>
+            <li style="--c:oklch(0.60 0.15 240)">
+              <span class="game-tally__label"><span class="t-vi" lang="vi">NHỊP VỖ CÁNH</span><span class="t-en" lang="en">FLAPS</span></span>
+              <b><i data-steps>0</i></b>
+            </li>
+          </ul>
+        </div>
+
+        <div class="game-screen__actions">
+          <button class="btn btn--solid" type="button" data-action="start">
+            <span class="t-vi" lang="vi">Bay lại lần nữa</span>
+            <span class="t-en" lang="en">Fly Again</span>
+            <span class="btn__sub only-pc">Space</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<dialog class="game-menu" id="game-menu" aria-label="Menu">
+  <div class="game-menu__panel">
+    <div class="game-menu__head">
+      <a href="../../index.html">
+        <span class="dot"></span>
+        <span>Vô Tri Game Portal</span>
+      </a>
+      <button class="esc-btn" type="button" data-action="close">ESC</button>
+    </div>
+    <nav>
+      <ul class="game-menu__list" data-menu-games></ul>
+    </nav>
+    <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--line-3);font-size:12px;color:var(--text-sub)">
+      <a href="../../index.html" style="color:var(--text-2);font-weight:700;text-decoration:none">
+        <span class="t-vi" lang="vi">Về Trang Chủ Chọn Game</span>
+        <span class="t-en" lang="en">Back to Game Hub</span>
+      </a>
+    </div>
+  </div>
+</dialog>
+</body>
+</html>
