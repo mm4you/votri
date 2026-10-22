@@ -168,28 +168,30 @@ export function createSoupPhysics(config = SOUP_GAME_CONFIG) {
     }
     state.posX = clamp(state.posX, -1.15, 1.15);
 
-    // 3. DAO ĐỘNG BƯỚC CHÂN TỰ NHIÊN (Gait Sway Oscillation)
-    // Tần số bước chân tạo lực lắc lư nhịp nhàng tự nhiên sang hai bên khi bước đi
+    // 3. DAO ĐỘNG BƯỚC CHÂN VÀ MẤT THĂNG BẰNG TỰ NHIÊN (Natural Gait Sway & Instability)
+    // Khi đi bình thường mà KHÔNG bấm F và J, bát phở sẽ tự động lắc lư chao đảo ngày càng mạnh
     const strideFreq = state.isTiptoeing ? 3.5 : (config.strideFreq || 2.5);
     const gaitPhase = state.time * strideFreq * Math.PI * 2;
-    const gaitIntensity = state.isTiptoeing ? 0.12 : 1.0;
-    const naturalGaitTorque = Math.sin(gaitPhase) * 3.4 * gaitIntensity;
+    const gaitIntensity = state.isTiptoeing ? 0.10 : 1.0;
+
+    // Lực lắc lư bước chân mạnh mẽ theo nhịp sải chân
+    const naturalGaitTorque = (Math.sin(gaitPhase) * 5.8 + Math.sin(state.time * 0.95 + 1.2) * 3.2) * gaitIntensity;
 
     // 4. LỰC ĐIỀU KHIỂN CỔ TAY (Player Wrist Torque F & J)
     let userTorque = 0.0;
-    const tiltPower = config.tiltTorque || 4.8;
+    const tiltPower = config.tiltTorque || 5.2;
     if (state.fPressed && !state.jPressed) {
-      userTorque += tiltPower * 1.45;
+      userTorque += tiltPower * 1.55;
     } else if (state.jPressed && !state.fPressed) {
-      userTorque -= tiltPower * 1.45;
+      userTorque -= tiltPower * 1.55;
     }
 
     // 5. CƠ CHẾ CON LẮC NGƯỢC & HIỆU ỨNG MẶT THOÁNG CHẤT LỎNG (Free Surface Fluid Mass Shift)
-    // Trọng lượng nước phở dồn sang bên nào sẽ kéo bát tự nghiêng nặng thêm về bên đó
-    const fluidMassTorque = state.waveX * 3.4;
-    const gravityOverturn = state.tiltRoll * 3.5;
-    const passiveWristSpring = -1.6 * state.tiltRoll;
-    const dampingConstant = config.tiltDamping || config.tiltDamp || 3.5;
+    // Sóng nước dồn sang bên nào sẽ kéo bát phở tự nghiêng đổ dữ dội về bên đó nếu không dùng F/J ghìm lại!
+    const fluidMassTorque = state.waveX * 6.2;
+    const gravityOverturn = state.tiltRoll * 4.8;
+    const passiveWristSpring = -0.9 * state.tiltRoll;
+    const dampingConstant = state.isTiptoeing ? 3.8 : 1.8;
     const passiveDamping = -dampingConstant * state.tiltRollVel;
 
     // 6. KIỂM TRA CHƯỚNG NGẠI VẬT DỌC ĐƯỜNG
@@ -277,7 +279,7 @@ export function createSoupPhysics(config = SOUP_GAME_CONFIG) {
     const currentDamping = state.isBlowing ? config.sloshDampingBlown : config.sloshDampingNormal;
     const omega = config.sloshFreq;
 
-    const waveExcitationX = -state.tiltRollVel * 1.8 + naturalGaitTorque * 0.8 + externalWind * 6.5;
+    const waveExcitationX = -state.tiltRollVel * 2.4 + naturalGaitTorque * 1.2 + externalWind * 7.0;
     const waveAccX = -2.0 * currentDamping * state.vWaveX - (omega * omega) * state.waveX + waveExcitationX;
 
     state.vWaveX += waveAccX * dt;

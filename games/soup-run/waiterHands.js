@@ -1,16 +1,16 @@
 /**
  * @file waiterHands.js
- * @description Mô hình Đôi Cánh Tay & Bàn Tay Người Phục Vụ Bưng Phở từ Model Xbot.glb (Chung bộ asset với Game Bơi):
+ * @description Mô hình Đôi Cánh Tay & Bàn Tay Người Phục Vụ Bưng Phở từ Model Xbot.glb:
  * 1. Sử dụng 100% Lưới SkinnedMesh và Khung Xương (Rig) thật từ Xbot.glb:
  *    - Toàn bộ cánh tay (vai, bắp tay, cẳng tay, cổ tay, bàn tay, 5 ngón tay) là MỘT DẢI LƯỚI LIỀN MẠCH DUY NHẤT.
- *    - TUYỆT ĐỐI KHÔNG GHÉP NỐI HÌNH TRỤ (Không bao giờ còn tình trạng các khúc đứt đoạn bay lơ lửng!).
+ *    - Tuyệt đối không ghép nối hình trụ, không có bất kỳ khe hở hay đứt đoạn nào.
  * 2. Tư thế bưng phở giải phẫu học chuẩn xác 100%:
- *    - Bàn tay ôm 2 bên thành ngoài tô phở (không xòe che lấp bát phở!).
- *    - Ngón cái tì phẳng tự nhiên trên mặt vành tô sứ (#d68d62).
- *    - 4 ngón tay (trỏ, giữa, áp út, út) uốn cong đỡ vững vàng dưới đáy gờ mép bát.
- *    - Cánh tay áo sơ mi trắng muốt nối dài liền mạch từ cổ tay xuyên suốt ra ngoài màn hình.
+ *    - Hai bàn tay bám chắc 2 bên vành tô sứ (không chỉa vào nhau che lấp bát phở hay đè lên lòng đỏ trứng).
+ *    - Ngón cái tì phẳng tự nhiên trên mặt vành tô sứ (cao độ Y = 1.238m khớp chính xác vành miệng bát).
+ *    - 4 ngón tay (trỏ, giữa, áp út, út) uốn cong đỡ vững vàng dưới đáy gờ mép bát (Y = 1.161m).
+ *    - Cánh tay áo sơ mi trắng muốt nối dài liền mạch từ cổ tay xuyên suốt ra ngoài hai góc màn hình.
  * 3. Phản ứng bỏng nước sôi (Scald Heat Glow):
- *    - Khi nước sôi tràn trúng tay, da tay ửng đỏ rát bỏng tự nhiên và giật nảy cơ tinh tế.
+ *    - Khi nước phở sôi tràn trúng ngón tay, da tay ửng đỏ rát bỏng tự nhiên và giật nảy cơ tinh tế.
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
@@ -75,7 +75,7 @@ export function createWaiterHands({ skin = {} } = {}) {
   // Phân định chất liệu:
   // Cổ tay và bàn tay (vRestPos.x > 0.69) mang màu da tự nhiên
   // Cẳng tay và bắp tay áo (vRestPos.x <= 0.69) mang màu áo sơ mi trắng muốt
-  float isHand = smoothstep(0.68, 0.71, ax);
+  float isHand = smoothstep(0.68, 0.70, ax);
   vec3 skinBase = vec3(0.839, 0.553, 0.384);   // #d68d62 da tự nhiên Á Đông
   // Màu da ửng đỏ rát bỏng khi nước sôi tràn trúng ngón tay
   vec3 skinBurn = vec3(0.92, 0.22, 0.16);
@@ -116,7 +116,7 @@ export function createWaiterHands({ skin = {} } = {}) {
     .then((gltf) => {
       modelScene = cloneSkeleton(gltf.scene);
       // Đặt nhân vật Xbot tại vị trí người bưng phở sau bát
-      modelScene.position.set(0, -1.15, -0.38);
+      modelScene.position.set(0, -1.15, -0.44);
       root.add(modelScene);
 
       modelScene.traverse((child) => {
@@ -140,7 +140,6 @@ export function createWaiterHands({ skin = {} } = {}) {
       rightForeArmBone = getBone('RightForeArm');
       rightHandBone = getBone('RightHand');
 
-      // Giải thuật IK đặt vị trí và xoay bàn tay bưng bát chuẩn xác
       applyCarryingPose();
     })
     .catch((err) => {
@@ -176,9 +175,9 @@ export function createWaiterHands({ skin = {} } = {}) {
       const L1 = S.distanceTo(E0);
       const L2 = E0.distanceTo(W0);
 
-      // Điểm cổ tay mong muốn: Ôm sát bên ngoài vành tô sứ (bán kính 0.124m), cao độ 0.080m, hơi lùi sau -0.035m
-      const localWristTarget = new THREE.Vector3(sign * 0.145, 0.078, -0.035);
-      const targetWorld = localWristTarget.clone();
+      // Điểm cổ tay ôm sát bên ngoài vành tô sứ (bán kính 0.140m, cao độ -0.010m cục bộ trong tô, -0.035m sau trục Z)
+      const localTarget = new THREE.Vector3(sign * 0.140, -0.010, -0.035);
+      const targetWorld = localTarget.clone();
       root.localToWorld(targetWorld);
 
       const ST = targetWorld.clone().sub(S);
@@ -195,33 +194,31 @@ export function createWaiterHands({ skin = {} } = {}) {
       const E = S.clone().add(elbowDir.clone().multiplyScalar(L1));
 
       // Quay bắp tay
-      const armParentInv = arm.parent.matrixWorld.clone().invert();
-      const localUpper = E.clone().sub(S).applyMatrix4(armParentInv).normalize();
-      arm.quaternion.setFromUnitVectors(new THREE.Vector3(sign, 0, 0), localUpper);
+      const armParentWorldQuat = arm.parent.getWorldQuaternion(new THREE.Quaternion());
+      const upperLocalDir = E.clone().sub(S).normalize().applyQuaternion(armParentWorldQuat.clone().invert());
+      arm.quaternion.setFromUnitVectors(new THREE.Vector3(sign, 0, 0), upperLocalDir);
       arm.updateMatrixWorld(true);
 
       // Quay cẳng tay
-      const foreArmParentInv = foreArm.parent.matrixWorld.clone().invert();
-      const localLower = targetWorld.clone().sub(E).applyMatrix4(foreArmParentInv).normalize();
-      foreArm.quaternion.setFromUnitVectors(new THREE.Vector3(sign, 0, 0), localLower);
+      const foreArmParentWorldQuat = foreArm.parent.getWorldQuaternion(new THREE.Quaternion());
+      const lowerLocalDir = targetWorld.clone().sub(E).normalize().applyQuaternion(foreArmParentWorldQuat.clone().invert());
+      foreArm.quaternion.setFromUnitVectors(new THREE.Vector3(sign, 0, 0), lowerLocalDir);
       foreArm.updateMatrixWorld(true);
 
-      // Định hướng bàn tay ôm dọc theo vành tô sứ (hướng +Z dọc thành tô, ngón cái tì trên, ngón con đỡ dưới)
+      // Định hướng bàn tay ôm dọc theo đường cong vành tô sứ (hướng +Z dọc thành tô)
       const fwd = new THREE.Vector3(sign * -0.15, -0.08, 0.98).normalize();
       const back = new THREE.Vector3(sign * 0.98, 0.18, 0.0).normalize();
-      const up = new THREE.Vector3().crossVectors(fwd, back).normalize();
+      const col0 = isLeft ? fwd : fwd.clone().negate();
+      const col1 = back;
+      const col2 = new THREE.Vector3().crossVectors(col0, col1).normalize();
 
-      const rotMat = new THREE.Matrix4().makeBasis(
-        isLeft ? fwd : fwd.clone().negate(),
-        back,
-        up
-      );
+      const rotMat = new THREE.Matrix4().makeBasis(col0, col1, col2);
       const targetWorldQuat = new THREE.Quaternion().setFromRotationMatrix(rotMat);
 
       const parentWorldQuat = foreArm.getWorldQuaternion(new THREE.Quaternion());
-      hand.quaternion.copy(parentWorldQuat.invert().multiply(targetWorldQuat));
+      hand.quaternion.copy(parentWorldQuat.clone().invert().multiply(targetWorldQuat));
 
-      // Uốn cong các ngón tay ôm chắc chắn dưới gờ mép tô sứ
+      // Uốn cong 4 ngón tay ôm chắc chắn dưới gờ mép tô sứ
       ['Index', 'Middle', 'Ring', 'Pinky'].forEach((f) => {
         const b1 = getBone(prefix + 'Hand' + f + '1');
         const b2 = getBone(prefix + 'Hand' + f + '2');
@@ -235,9 +232,7 @@ export function createWaiterHands({ skin = {} } = {}) {
       const t1 = getBone(prefix + 'HandThumb1');
       const t2 = getBone(prefix + 'HandThumb2');
       const t3 = getBone(prefix + 'HandThumb3');
-      if (t1) {
-        t1.rotation.set(0.12, -sign * 0.35, sign * 0.30);
-      }
+      if (t1) t1.rotation.set(0.12, -sign * 0.35, sign * 0.30);
       if (t2) t2.rotation.z = sign * 0.20;
       if (t3) t3.rotation.z = -sign * 0.15;
     }
@@ -249,6 +244,9 @@ export function createWaiterHands({ skin = {} } = {}) {
   let scaldTimer = 0.0;
   function update(physState, dt) {
     if (!modelScene) return;
+
+    // Cập nhật vị trí tay ôm vành bát khi bát nghiêng/nhấp nhô
+    applyCarryingPose();
 
     // Khi nước phở sôi tràn mép gây bỏng
     if (physState.isScalded) {

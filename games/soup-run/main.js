@@ -8,10 +8,10 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { SOUP_GAME_CONFIG, OBSTACLES, SOUP_SKINS, SOUP_RANKS } from './config.js?v=72';
-import { createSoupPhysics } from './physics.js?v=72';
-import { createWaiterCharacter } from './waiterModel.js?v=72';
-import { createCorridorScene } from './corridorScene.js?v=72';
+import { SOUP_GAME_CONFIG, OBSTACLES, SOUP_SKINS, SOUP_RANKS } from './config.js?v=73';
+import { createSoupPhysics } from './physics.js?v=73';
+import { createWaiterCharacter } from './waiterModel.js?v=73';
+import { createCorridorScene } from './corridorScene.js?v=73';
 import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=40';
 import { createGameCache, portalSettings } from '../../shared/storage/portalCache.js?v=40';
 import { GAMES } from '../../shared/ui/gameRegistry.js?v=40';

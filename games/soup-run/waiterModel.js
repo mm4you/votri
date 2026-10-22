@@ -7,7 +7,7 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { createPhoBowlModel } from './phoModel.js?v=72';
+import { createPhoBowlModel } from './phoModel.js?v=73';
 
 export function createWaiterCharacter({ skin = {} } = {}) {
   const root = new THREE.Group();

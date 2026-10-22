@@ -27,7 +27,7 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { createWaiterHands } from './waiterHands.js?v=72';
+import { createWaiterHands } from './waiterHands.js?v=73';
 
 /** Hàm tính bán kính trong của lòng tô sứ tại độ cao y */
 export function getBowlInnerRadiusAt(y) {
