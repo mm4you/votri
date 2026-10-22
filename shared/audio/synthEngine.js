@@ -426,5 +426,134 @@ export function createSynthEngine({ isMuted = () => false } = {}) {
         gain: 0.38 * gain,
       });
     },
+
+    /** Tiếng sóng canh sánh chao đảo trong bát sứ (Soup Slosh) */
+    soupSlosh({ intensity = 0.5, gain = 0.75 } = {}) {
+      const p = Math.max(0.2, Math.min(1.2, intensity));
+      burst({
+        dur: 0.18 + p * 0.12,
+        freq: [780, 260],
+        filter: 'bandpass',
+        q: 1.4,
+        gain: 0.28 * p * gain,
+        attack: 0.02,
+        wet: 0.25,
+      });
+      tone({
+        type: 'sine',
+        freq: [240 * (1 + p * 0.3), 160],
+        dur: 0.14,
+        gain: 0.18 * p * gain,
+        attack: 0.015,
+      });
+    },
+
+    /** Tiếng canh nóng tràn đổ xuống sàn xèo xèo bốc khói (Soup Spill & Sizzle) */
+    soupSpill({ intensity = 0.7, gain = 0.85 } = {}) {
+      const p = Math.max(0.3, Math.min(1.0, intensity));
+      // Giọt nước văng toé
+      burst({
+        dur: 0.22,
+        freq: [1600, 450],
+        filter: 'bandpass',
+        q: 1.1,
+        gain: 0.4 * p * gain,
+        attack: 0.01,
+        wet: 0.3,
+      });
+      // Tiếng xèo xèo bốc hơi trên nền gỗ nóng
+      burst({
+        dur: 0.35 * p,
+        freq: [3800, 2200],
+        filter: 'highpass',
+        q: 2.2,
+        gain: 0.24 * p * gain,
+        attack: 0.03,
+        drive: 1.1,
+        delay: 0.05,
+      });
+      // Giọt bắn lách tách
+      tone({
+        type: 'sine',
+        freq: [680, 920],
+        dur: 0.06,
+        gain: 0.15 * p * gain,
+        wet: 0.2,
+      });
+    },
+
+    /** Tiếng bỏng rát kêu réo hài hước khi nước canh sôi bắn vào ngón tay (Scald Burn) */
+    scaldBurn({ gain = 0.85 } = {}) {
+      // Tiếng réo hài hước "Ái da!" trượt âm cao
+      tone({
+        type: 'sawtooth',
+        freq: [380, 920],
+        dur: 0.28,
+        gain: 0.22 * gain,
+        lowpass: [1600, 600],
+        wet: 0.3,
+      });
+      tone({
+        type: 'sine',
+        freq: [640, 1100],
+        dur: 0.25,
+        gain: 0.25 * gain,
+      });
+    },
+
+    /** Tiếng thổi phù phù làm nguội và dịu sóng canh (Blow Cool) */
+    blowCool({ gain = 0.65 } = {}) {
+      burst({
+        dur: 0.32,
+        freq: [1400, 750],
+        filter: 'bandpass',
+        q: 2.5,
+        gain: 0.22 * gain,
+        attack: 0.06,
+        wet: 0.15,
+      });
+    },
+
+    /** Tiếng vấp chân loạng choạng (Trip Stumble) */
+    obstacleTrip({ gain = 0.85 } = {}) {
+      tone({
+        type: 'triangle',
+        freq: [190, 85],
+        dur: 0.18,
+        gain: 0.45 * gain,
+      });
+      burst({
+        dur: 0.25,
+        freq: [550, 120],
+        filter: 'lowpass',
+        gain: 0.5 * gain,
+        drive: 1.4,
+      });
+      tone({
+        type: 'sine',
+        freq: [480, 220],
+        dur: 0.15,
+        gain: 0.2 * gain,
+        delay: 0.04,
+      });
+    },
+
+    /** Tiếng mèo kêu ngơ ngác khi bị bước suýt trúng (Cat Meow) */
+    catMeow({ gain = 0.75 } = {}) {
+      tone({
+        type: 'sawtooth',
+        freq: [620, 880],
+        dur: 0.18,
+        gain: 0.18 * gain,
+        lowpass: [1800, 1200],
+      });
+      tone({
+        type: 'sine',
+        freq: [880, 520],
+        dur: 0.22,
+        gain: 0.18 * gain,
+        delay: 0.15,
+      });
+    },
   };
 }

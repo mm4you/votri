@@ -45,6 +45,26 @@ export const GAMES = [
     lowerIsBetter: true,
     status: 'ready',
   },
+  {
+    id: 'soup-run',
+    slug: 'soup-run',
+    path: '/games/soup-run/index.html',
+    hue: 24,
+    badgeVi: '50m • 3 phím F, J, Space',
+    badgeEn: '50m • 3 keys F, J, Space',
+    titleVi: 'Bát Canh Bỏng Tay',
+    titleEn: 'Hot Soup Run',
+    descVi: 'Bưng bát phở sôi sục qua hành lang quán ăn! Dùng F & J để nghiêng giữ thăng bằng chống sánh đổ. Nhấn SPACE để rón rén và thổi nguội bát canh!',
+    descEn: 'Carry a brimming hot bowl of soup! Tilt left/right with F & J to counter sloshes. Hold SPACE to tip-toe and blow steam to calm waves!',
+    controls: [
+      { key: 'F', labelVi: 'Nghiêng trái', labelEn: 'Tilt L', color: '#ea580c' },
+      { key: 'SPACE', labelVi: 'Thổi & Rón rén', labelEn: 'Blow & Slow', color: '#f97316' },
+      { key: 'J', labelVi: 'Nghiêng phải', labelEn: 'Tilt R', color: '#16a34a' },
+    ],
+    unit: 's',
+    lowerIsBetter: true,
+    status: 'ready',
+  },
 ];
 
 export function getGameById(id) {

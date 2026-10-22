@@ -1346,3 +1346,60 @@ html[lang="en"] .lang__btn[data-lang="en"] {
     font-size: 11px;
   }
 }
+
+/* 3-Button Layout for Hot Soup Run */
+.game-pad--soup {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1fr;
+  gap: 8px;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 6px 12px calc(8px + env(safe-area-inset-bottom));
+}
+.game-pad--soup .game-btn {
+  height: 52px;
+  border-radius: 14px;
+  font-size: 14px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22), 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+.game-pad--soup .game-btn small {
+  display: none;
+}
+.game-pad--soup .game-btn__key {
+  height: 18px;
+  font-size: 11px;
+  margin-top: 1px;
+}
+.game-btn--blow {
+  border: 2px solid #ea580c !important;
+  background: #f97316 !important;
+  box-shadow: 0 4px 0 #9a3412, 0 6px 14px rgba(0, 0, 0, 0.15) !important;
+}
+.game-btn--blow:hover {
+  background: #fb923c !important;
+  border-color: #9a3412 !important;
+}
+.game-btn--blow:active {
+  transform: translateY(2px) scale(0.97) !important;
+}
+.game-btn--blow span,
+.game-btn--blow small {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+.game-btn--blow .game-btn__key {
+  background: #ffffff !important;
+  color: #9a3412 !important;
+  border: 1.5px solid #9a3412 !important;
+  font-weight: 900 !important;
+}
+@media (max-width: 680px) {
+  .game-pad--soup {
+    gap: 6px;
+    padding: 0 6px 6px;
+  }
+  .game-pad--soup .game-btn {
+    height: 48px;
+    font-size: 12px;
+  }
+}

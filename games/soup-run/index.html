@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="vi" data-title-vi="Bát Canh Bỏng Tay | Bưng Phở Sài Gòn" data-title-en="Hot Soup Run | Vo Tri Game">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bát Canh Bỏng Tay | Bưng Phở Sài Gòn</title>
+  <link rel="stylesheet" href="../../shared/css/game-shell.css?v=45">
+  <script type="module" src="./main.js?v=45"></script>
+</head>
+<body>
+<div class="game" style="--hue:24">
+  <header class="game-bar">
+    <div class="game-bar__left">
+      <button class="game-bar__menu" type="button" aria-haspopup="dialog" aria-controls="game-menu">
+        <span class="game-bar__burger" aria-hidden="true"></span>
+        <span><span class="t-vi" lang="vi">Danh mục</span><span class="t-en" lang="en">Games</span></span>
+      </button>
+      <button class="game-bar__cam" type="button" data-cam-toggle>
+        <span data-cam-vi class="t-vi" lang="vi">Góc Bưng Bát</span>
+        <span data-cam-en class="t-en" lang="en">Bowl View</span>
+      </button>
+    </div>
+
+    <h1 class="game-bar__title">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="game-bar__name">
+        <span class="t-vi" lang="vi">Bát Canh Bỏng Tay</span>
+        <span class="t-en" lang="en">Hot Soup Run</span>
+      </span>
+    </h1>
+
+    <div class="game-bar__end">
+      <button class="game-bar__mute" type="button" aria-pressed="false" title="Mute / Unmute">
+        <svg class="game-bar__icon game-bar__icon--on" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9h3l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/>
+          <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>
+        </svg>
+        <svg class="game-bar__icon game-bar__icon--off" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9h3l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/>
+          <path d="M16 9.5l5 5M21 9.5l-5 5"/>
+        </svg>
+      </button>
+      <div class="lang" role="group" aria-label="Ngôn ngữ / Language">
+        <button class="lang__btn" type="button" data-lang="vi" lang="vi" aria-pressed="true">VI</button>
+        <button class="lang__btn" type="button" data-lang="en" lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="game-stage" style="background:#1a0f08">
+    <div class="hud" data-hud hidden>
+      <div class="hud__left">
+        <div class="hud__side">
+          <span class="hud__name">
+            <span class="dot"></span>
+            <span class="t-vi" lang="vi">HÀNH LANG BÀN 9</span>
+            <span class="t-en" lang="en">DISTANCE</span>
+          </span>
+          <div class="hud__score">
+            <span class="hud__label"><span class="t-vi" lang="vi">CÒN LẠI</span><span class="t-en" lang="en">REMAIN</span></span>
+            <div>
+              <span class="hud__pts" data-score="remain">50</span>
+              <span class="hud__unit">m</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud__breath-card">
+          <div class="hud__breath-head">
+            <span class="hud__label">
+              <span class="t-vi" lang="vi">NƯỚC DÙNG</span>
+              <span class="t-en" lang="en">SOUP BROTH</span>
+            </span>
+            <span class="hud__breath-status">
+              <span data-soup-status-vi class="t-vi" lang="vi">ỔN ĐỊNH</span>
+              <span data-soup-status-en class="t-en" lang="en">STEADY</span>
+            </span>
+          </div>
+          <div class="meter">
+            <div class="meter__fill" data-soup-fill style="--v:1; background:#16a34a"></div>
+          </div>
+          <div style="font-size:11px; font-weight:800; color:var(--text-sub); margin-top:3px; text-align:right">
+            <span data-soup-pts>100</span>%
+          </div>
+        </div>
+      </div>
+
+      <div class="hud__pair">
+        <div class="hud__timer">
+          <span class="hud__label"><span class="t-vi" lang="vi">THỜI GIAN</span><span class="t-en" lang="en">TIME</span></span>
+          <span class="hud__time" data-time>0.0</span>
+        </div>
+        <div class="hud__timer">
+          <span class="hud__label"><span class="t-vi" lang="vi">TRÀN CANH</span><span class="t-en" lang="en">SPILLS</span></span>
+          <span class="hud__time" data-spills>0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hướng dẫn tình huống trên đường -->
+    <p class="game-hint" data-hint="start" hidden>
+      <span class="t-vi" lang="vi">Bấm F (Nghiêng trái) và J (Nghiêng phải) để giữ thăng bằng. Giữ SPACE để rón rén bước chậm và thổi nguội sóng nước!</span>
+      <span class="t-en" lang="en">Press F (Tilt Left) & J (Tilt Right) to balance. Hold SPACE to tip-toe and blow steam to calm waves!</span>
+    </p>
+    <p class="game-hint game-hint--warn" data-hint="cat" hidden>
+      <span class="t-vi" lang="vi">Mèo mập đang ngủ giữa đường! Hãy GIỮ SPACE để rón rén bước qua, đừng đánh thức mèo!</span>
+      <span class="t-en" lang="en">Fat sleeping cat ahead! HOLD SPACE to tip-toe quietly, do not wake the cat!</span>
+    </p>
+    <p class="game-hint game-hint--warn" data-hint="puddle" hidden>
+      <span class="t-vi" lang="vi">Vết sàn ướt trơn như băng! Hãy bấm so le F và J thật nhịp nhàng để ghìm bát!</span>
+      <span class="t-en" lang="en">Slippery wet floor! Alternate F and J rapidly to steady the bowl!</span>
+    </p>
+    <p class="game-hint game-hint--warn" data-hint="fan" hidden>
+      <span class="t-vi" lang="vi">Quạt cây đang thổi bạt mạng sang phải! Hãy giữ mép F để chống gió tạt!</span>
+      <span class="t-en" lang="en">Wind gust blowing right! Hold Left Tilt (F) to resist the wind!</span>
+    </p>
+    <p class="game-hint game-hint--warn" data-hint="lego" hidden>
+      <span class="t-vi" lang="vi">Cục gạch đồ chơi sắc nhọn! Giữ SPACE rón rén tránh né kẻo giẫm phải nảy tung bát!</span>
+      <span class="t-en" lang="en">Sharp toy brick! Hold SPACE to gently step around it!</span>
+    </p>
+
+    <!-- Tem phản hồi giật gân -->
+    <div class="game-stamp game-stamp--top" data-stamp="spill" hidden>
+      <span class="t-vi" lang="vi">TRÀN BÁT!!</span>
+      <span class="t-en" lang="en">SPILLING!!</span>
+    </div>
+    <div class="game-stamp game-stamp--top" data-stamp="scald" hidden style="background:#dc2626; color:#fff">
+      <span class="t-vi" lang="vi">ÁI DA BỎNG TAY!!</span>
+      <span class="t-en" lang="en">SCALDED FINGERS!!</span>
+    </div>
+    <div class="game-stamp game-stamp--go" data-stamp="goal" hidden>
+      <span class="t-vi" lang="vi">VỀ ĐÍCH BÀN SỐ 9!!</span>
+      <span class="t-en" lang="en">SERVED TABLE #9!!</span>
+    </div>
+
+    <!-- Bàn phím điều khiển 3 nút cảm ứng: F | SPACE | J -->
+    <div class="game-pad game-pad--soup">
+      <button class="game-btn" type="button" data-action="tilt-left" style="--c:oklch(0.68 0.18 45)">
+        <span class="game-btn__dot" style="background:#ea580c"></span>
+        <span><span class="t-vi" lang="vi">Nghiêng Trái</span><span class="t-en" lang="en">Tilt Left</span></span>
+        <small><span class="t-vi" lang="vi">Nâng F chống lệch</span><span class="t-en" lang="en">F Lift</span></small>
+        <span class="game-btn__key">F</span>
+      </button>
+
+      <button class="game-btn game-btn--blow" type="button" data-action="blow" style="--c:oklch(0.72 0.22 55)">
+        <span class="game-btn__dot" style="background:#ffffff"></span>
+        <span><span class="t-vi" lang="vi">Thổi & Rón Rén</span><span class="t-en" lang="en">Blow & Slow</span></span>
+        <small><span class="t-vi" lang="vi">Dịu sóng phở</span><span class="t-en" lang="en">Calm Wave</span></small>
+        <span class="game-btn__key">SPACE</span>
+      </button>
+
+      <button class="game-btn" type="button" data-action="tilt-right" style="--c:oklch(0.62 0.18 145)">
+        <span class="game-btn__dot" style="background:#16a34a"></span>
+        <span><span class="t-vi" lang="vi">Nghiêng Phải</span><span class="t-en" lang="en">Tilt Right</span></span>
+        <small><span class="t-vi" lang="vi">Nâng J chống lệch</span><span class="t-en" lang="en">J Lift</span></small>
+        <span class="game-btn__key">J</span>
+      </button>
+    </div>
+
+    <!-- Màn hình bắt đầu Start Screen -->
+    <div class="game-screen" data-screen="start">
+      <div class="game-screen__panel">
+        <h2 class="game-screen__title">
+          <span class="t-vi" lang="vi">Bát Canh Bỏng Tay - Phở Sài Gòn (50m)</span>
+          <span class="t-en" lang="en">Hot Soup Run - Saigon Pho (50m)</span>
+        </h2>
+        <p class="game-screen__lead">
+          <span class="t-vi" lang="vi">Bưng tô phở bò Nam Bộ nóng hổi đầy ắp bò viên, nạm gầu, bánh phở và nước dùng sôi sục! Dùng F & J để nâng mép giữ thăng bằng. Nhấn SPACE để rón rén bước chậm và thổi phù phù làm nguội sóng nước!</span>
+          <span class="t-en" lang="en">Deliver a piping hot Southern Pho bowl with meatballs and rich broth! Tilt with F & J to counter sloshes. Hold SPACE to tip-toe and blow steam to calm waves!</span>
+        </p>
+
+        <div>
+          <div class="hud__label" style="margin-bottom:6px">
+            <span class="t-vi" lang="vi">CHỌN TÔ PHỞ (LƯU CACHE)</span>
+            <span class="t-en" lang="en">SELECT BOWL (CACHED)</span>
+          </div>
+          <div class="skin-picker" data-skin-picker></div>
+        </div>
+
+        <p class="game-tip">
+          <span class="t-vi" lang="vi">Mẹo: Đừng đi quá vội! Khi nước phở bắt đầu chao đảo hoặc gặp chướng ngại vật (mèo, sàn ướt, quạt cây), hãy giữ chặt SPACE để thổi phù phù cho mặt nước phẳng lặng trở lại.</span>
+          <span class="t-en" lang="en">Tip: Do not rush blindly! When waves start sloshing or approaching obstacles, hold SPACE to blow cool air and calm the broth.</span>
+        </p>
+
+        <div class="pb-row">
+          <span data-pb-badge>Kỷ lục cá nhân: Chưa có</span>
+          <button type="button" class="pb-clear" data-clear-cache>
+            <span class="t-vi" lang="vi">Xóa Cache</span>
+            <span class="t-en" lang="en">Reset</span>
+          </button>
+        </div>
+
+        <button class="btn btn--solid" type="button" data-action="start">
+          <span class="t-vi" lang="vi">Bắt đầu bưng phở 50m</span>
+          <span class="t-en" lang="en">Deliver Pho 50m</span>
+          <span class="btn__sub only-pc">Space</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Màn hình kết thúc Result Screen -->
+    <div class="game-screen game-screen--peek" data-screen="result" hidden>
+      <div class="game-screen__panel">
+        <span class="new-record-pill" data-new-record hidden>
+          <span class="t-vi" lang="vi">KỶ LỤC CÁ NHÂN MỚI!</span>
+          <span class="t-en" lang="en">NEW PERSONAL BEST!</span>
+        </span>
+
+        <h2 class="game-screen__title game-screen__title--result">
+          <span class="is-win" data-result="win" hidden>
+            <span class="t-vi" lang="vi">GIAO PHỞ THÀNH CÔNG!!</span>
+            <span class="t-en" lang="en">PHO DELIVERED SUCCESSFULLY!!</span>
+          </span>
+          <span class="is-lose" data-result="lose" hidden>
+            <span class="t-vi" lang="vi">GIAO PHỞ THẤT BẠI!</span>
+            <span class="t-en" lang="en">DELIVERY FAILED!</span>
+          </span>
+        </h2>
+
+        <p class="game-screen__text">
+          <span data-reason="empty" hidden>
+            <span class="t-vi" lang="vi">Nước phở tràn sạch lênh láng ra sàn! Khách nhìn đáy bát thở dài không nhận!</span>
+            <span class="t-en" lang="en">Broth spilled dry on the floor! Customer refused the empty bowl!</span>
+          </span>
+          <span data-reason="timeup" hidden>
+            <span class="t-vi" lang="vi">Quá 65 giây! Khách chờ lâu quá đã tức giận bỏ về quán khác!</span>
+            <span class="t-en" lang="en">Over 65s! The hungry customer gave up and left the restaurant!</span>
+          </span>
+          <span data-reason="flipped" hidden>
+            <span class="t-vi" lang="vi">Bát canh nghiêng quá 50 độ lật nhào toang cả tô phở!</span>
+            <span class="t-en" lang="en">Tilted past 50 degrees and flipped the entire bowl!</span>
+          </span>
+        </p>
+
+        <div class="game-tally" data-tally>
+          <div class="game-tally__head">
+            <p class="game-tally__rank">
+              <span data-rank-title>BẬC THẦY BƯNG PHỞ</span>
+            </p>
+            <p style="font-size:13px; color:var(--text-sub); margin:4px 0 0" data-rank-sub>
+              Nước dùng đầy ắp sóng sánh thơm lừng!
+            </p>
+          </div>
+
+          <ul class="game-tally__items">
+            <li style="--c:oklch(0.60 0.16 150)">
+              <span class="game-tally__label"><span class="t-vi" lang="vi">NƯỚC CÒN LẠI</span><span class="t-en" lang="en">SOUP REMAIN</span></span>
+              <b><i data-final="soup">100</i><small>%</small></b>
+            </li>
+            <li style="--c:oklch(0.60 0.20 25)">
+              <span class="game-tally__label"><span class="t-vi" lang="vi">THỜI GIAN</span><span class="t-en" lang="en">TIME</span></span>
+              <b><i data-final="time">0.0</i><small>s</small></b>
+            </li>
+            <li style="--c:oklch(0.60 0.15 240)">
+              <span class="game-tally__label"><span class="t-vi" lang="vi">TỐC ĐỘ ĐỈNH</span><span class="t-en" lang="en">TOP SPEED</span></span>
+              <b><i data-final="speed">0</i><small>km/h</small></b>
+            </li>
+          </ul>
+        </div>
+
+        <div class="game-screen__actions">
+          <button class="btn btn--solid" type="button" data-action="start">
+            <span class="t-vi" lang="vi">Bưng lại tô khác</span>
+            <span class="t-en" lang="en">Deliver Another Bowl</span>
+            <span class="btn__sub only-pc">Space</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<dialog class="game-menu" id="game-menu" aria-label="Menu">
+  <div class="game-menu__panel">
+    <div class="game-menu__head">
+      <a href="../../index.html">
+        <span class="dot"></span>
+        <span>Vô Tri Game Portal</span>
+      </a>
+      <button class="esc-btn" type="button" data-action="close">ESC</button>
+    </div>
+    <nav>
+      <ul class="game-menu__list" data-menu-games></ul>
+    </nav>
+    <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--line-3);font-size:12px;color:var(--text-sub)">
+      <a href="../../index.html" style="color:var(--text-2);font-weight:700;text-decoration:none">
+        <span class="t-vi" lang="vi">Về Trang Chủ Chọn Game</span>
+        <span class="t-en" lang="en">Back to Game Hub</span>
+      </a>
+    </div>
+  </div>
+</dialog>
+</body>
+</html>
