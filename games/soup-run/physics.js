@@ -174,8 +174,8 @@ export function createSoupPhysics(config = SOUP_GAME_CONFIG) {
     const gaitPhase = state.time * strideFreq * Math.PI * 2;
     const gaitIntensity = state.isTiptoeing ? 0.10 : 1.0;
 
-    // Lực lắc lư bước chân mạnh mẽ theo nhịp sải chân
-    const naturalGaitTorque = (Math.sin(gaitPhase) * 5.8 + Math.sin(state.time * 0.95 + 1.2) * 3.2) * gaitIntensity;
+    // Lực lắc lư bước chân tự nhiên vừa vặn
+    const naturalGaitTorque = (Math.sin(gaitPhase) * 4.6 + Math.sin(state.time * 0.95 + 1.2) * 2.2) * gaitIntensity;
 
     // 4. LỰC ĐIỀU KHIỂN CỔ TAY (Player Wrist Torque F & J)
     let userTorque = 0.0;
@@ -187,11 +187,11 @@ export function createSoupPhysics(config = SOUP_GAME_CONFIG) {
     }
 
     // 5. CƠ CHẾ CON LẮC NGƯỢC & HIỆU ỨNG MẶT THOÁNG CHẤT LỎNG (Free Surface Fluid Mass Shift)
-    // Sóng nước dồn sang bên nào sẽ kéo bát phở tự nghiêng đổ dữ dội về bên đó nếu không dùng F/J ghìm lại!
-    const fluidMassTorque = state.waveX * 6.2;
-    const gravityOverturn = state.tiltRoll * 4.8;
-    const passiveWristSpring = -0.9 * state.tiltRoll;
-    const dampingConstant = state.isTiptoeing ? 3.8 : 1.8;
+    // Sóng nước dồn sang bên nào sẽ kéo bát phở tự nghiêng về bên đó vừa vặn
+    const fluidMassTorque = state.waveX * 4.8;
+    const gravityOverturn = state.tiltRoll * 4.0;
+    const passiveWristSpring = -1.2 * state.tiltRoll;
+    const dampingConstant = state.isTiptoeing ? 3.8 : 2.2;
     const passiveDamping = -dampingConstant * state.tiltRollVel;
 
     // 6. KIỂM TRA CHƯỚNG NGẠI VẬT DỌC ĐƯỜNG

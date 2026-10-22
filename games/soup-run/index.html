@@ -4,8 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Bát Canh Bỏng Tay | Bưng Phở Sài Gòn</title>
-  <link rel="stylesheet" href="../../shared/css/game-shell.css?v=45">
-  <script type="module" src="./main.js?v=73"></script>
+  <link rel="stylesheet" href="../../shared/css/game-shell.css?v=46">
+  <style>
+    /* Đặt thông báo gợi ý phía trên tô phở để không che khuất bát phở và hai bàn tay */
+    .game-hint {
+      top: calc(72px + env(safe-area-inset-top));
+      bottom: auto;
+    }
+  </style>
+  <script type="module" src="./main.js?v=75"></script>
 </head>
 <body>
 <div class="game" style="--hue:24">
@@ -99,8 +106,8 @@
 
     <!-- Hướng dẫn tình huống trên đường -->
     <p class="game-hint" data-hint="start" hidden>
-      <span class="t-vi" lang="vi">Bấm F (Nghiêng trái) và J (Nghiêng phải) để giữ thăng bằng. Giữ SPACE để rón rén bước chậm và thổi nguội sóng nước!</span>
-      <span class="t-en" lang="en">Press F (Tilt Left) & J (Tilt Right) to balance. Hold SPACE to tip-toe and blow steam to calm waves!</span>
+      <span class="t-vi" lang="vi">Bấm F &amp; J (hoặc chạm 2 nút trái/phải) để giữ thăng bằng tô phở! Giữ SPACE (hoặc nút giữa) để rón rén và làm dịu sóng nước!</span>
+      <span class="t-en" lang="en">Press F &amp; J (or tap Left/Right) to balance! Hold SPACE (or Middle button) to tip-toe and calm soup waves!</span>
     </p>
     <p class="game-hint game-hint--warn" data-hint="cat" hidden>
       <span class="t-vi" lang="vi">Mèo mập đang ngủ giữa đường! Hãy GIỮ SPACE để rón rén bước qua, đừng đánh thức mèo!</span>

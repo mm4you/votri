@@ -8,10 +8,10 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { SOUP_GAME_CONFIG, OBSTACLES, SOUP_SKINS, SOUP_RANKS } from './config.js?v=73';
-import { createSoupPhysics } from './physics.js?v=73';
-import { createWaiterCharacter } from './waiterModel.js?v=73';
-import { createCorridorScene } from './corridorScene.js?v=73';
+import { SOUP_GAME_CONFIG, OBSTACLES, SOUP_SKINS, SOUP_RANKS } from './config.js?v=75';
+import { createSoupPhysics } from './physics.js?v=75';
+import { createWaiterCharacter } from './waiterModel.js?v=75';
+import { createCorridorScene } from './corridorScene.js?v=75';
 import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=40';
 import { createGameCache, portalSettings } from '../../shared/storage/portalCache.js?v=40';
 import { GAMES } from '../../shared/ui/gameRegistry.js?v=40';
@@ -147,6 +147,7 @@ function updateInputs() {
 }
 
 window.addEventListener('keydown', (e) => {
+  hideHint('start');
   // F & J chuyên biệt dùng để nghiêng nâng mép giữ thăng bằng tô phở (không làm lệch hướng đi!)
   if (e.code === 'KeyF') { keysDown.f = true; updateInputs(); }
   if (e.code === 'KeyJ') { keysDown.j = true; updateInputs(); }
@@ -190,6 +191,7 @@ function bindTouch(btn, keyProp) {
   if (!btn) return;
   const start = (e) => {
     e.preventDefault();
+    hideHint('start');
     keysDown[keyProp] = true;
     updateInputs();
     btn.classList.add('is-active');
@@ -542,12 +544,23 @@ function showResultScreen(isWin, st) {
   updatePbBadge();
 }
 
-window.addEventListener('resize', () => {
+function updateCameraFov() {
   const w = stage.clientWidth;
   const h = stage.clientHeight;
-  camera.aspect = w / h;
+  const aspect = w / h;
+  camera.aspect = aspect;
+  if (aspect < 1.0) {
+    const targetHFov = 66 * Math.PI / 180;
+    const vFovRad = 2 * Math.atan(Math.tan(targetHFov / 2) / aspect);
+    camera.fov = THREE.MathUtils.clamp(vFovRad * (180 / Math.PI), 52, 82);
+  } else {
+    camera.fov = 52;
+  }
   camera.updateProjectionMatrix();
   renderer.setSize(w, h);
-});
+}
+
+window.addEventListener('resize', updateCameraFov);
+updateCameraFov();
 
 requestAnimationFrame(animate);

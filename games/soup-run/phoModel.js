@@ -27,7 +27,6 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { createWaiterHands } from './waiterHands.js?v=73';
 
 /** Hàm tính bán kính trong của lòng tô sứ tại độ cao y */
 export function getBowlInnerRadiusAt(y) {
@@ -609,14 +608,6 @@ export function createPhoBowlModel({ skin = {} } = {}) {
   // - 4 ngón tay (trỏ, giữa, áp út, út) tách biệt rõ ràng, phân đốt uốn cong ôm chắc chắn đỡ dưới gờ mép tô sứ.
   // - Mu bàn tay thon thả mềm mại chuẩn giải phẫu học, có 4 khớp xương ngón tay và gò mô ngón cái.
   // - Cổ tay thon thả nối liền vào cổ áo sơ mi trắng có cúc ngọc trai.
-  // 6. ĐÔI BÀN TAY NGƯỜI PHỤC VỤ CHÂN THỰC 100% TỪ MODEL XBOT (Xbot Humanoid Hands)
-  // - 5 ngón tay chân thực từ model Xbot (chung bộ asset với game bơi)
-  // - Cánh tay áo sơ mi trắng nối dài xuyên suốt ra khỏi mép dưới màn hình
-  // - Phản xạ co giật cơ và ửng đỏ tự nhiên khi nước dùng sôi tràn mép
-  const waiterHands = createWaiterHands({ skin });
-  const handsGroup = waiterHands.root;
-  root.add(handsGroup);
-
   // 7. BẮN GIỌT NƯỚC DÙNG KHI TRÀN MÉP
   const dropletPoolSize = 28;
   const dropletGeo = new THREE.SphereGeometry(0.0055, 8, 8);
@@ -776,8 +767,6 @@ export function createPhoBowlModel({ skin = {} } = {}) {
     stem1.position.y = Math.max(0.024, getFluidHeightAt(stem1.position.x, stem1.position.z) + 0.002);
     stem2.position.y = Math.max(0.024, getFluidHeightAt(stem2.position.x, stem2.position.z) + 0.002);
 
-    // 8.3. BÀN TAY PHẢN XẠ BỎNG (Scald Reflex) & CẬP NHẬT CÁNH TAY
-    waiterHands.update(physState, dt);
 
     // 8.4. LÀN KHÓI NGHI NGÚT
     const isBlowing = physState.isBlowing;
@@ -830,7 +819,6 @@ export function createPhoBowlModel({ skin = {} } = {}) {
       rimLineMat.color.setHex(skinData.rimColor);
       rimLineSub.material.color.setHex(skinData.rimColor);
     }
-    waiterHands.setSkin(skinData);
   }
 
   return {
@@ -838,7 +826,6 @@ export function createPhoBowlModel({ skin = {} } = {}) {
     bowlMesh,
     sloshMesh,
     toppingsGroup,
-    handsGroup,
     update,
     setSkin,
   };

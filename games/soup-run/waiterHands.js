@@ -2,12 +2,12 @@
  * @file waiterHands.js
  * @description Mô hình Đôi Cánh Tay & Bàn Tay Người Phục Vụ Bưng Phở từ Model Xbot.glb:
  * 1. Sử dụng 100% Lưới SkinnedMesh và Khung Xương (Rig) thật từ Xbot.glb:
- *    - Toàn bộ cánh tay (vai, bắp tay, cẳng tay, cổ tay, bàn tay, 5 ngón tay) là MỘT DẢI LƯỚI LIỀN MẠCH DUY NHẤT.
+ *    - Toàn bộ cánh tay (vai, bắp tay, cẳng tay, cổ tay, bàn tay, 5 ngón tay) là một dải lưới liền mạch.
  *    - Tuyệt đối không ghép nối hình trụ, không có bất kỳ khe hở hay đứt đoạn nào.
- * 2. Tư thế bưng phở giải phẫu học chuẩn xác 100%:
- *    - Hai bàn tay bám chắc 2 bên vành tô sứ (không chỉa vào nhau che lấp bát phở hay đè lên lòng đỏ trứng).
- *    - Ngón cái tì phẳng tự nhiên trên mặt vành tô sứ (cao độ Y = 1.238m khớp chính xác vành miệng bát).
- *    - 4 ngón tay (trỏ, giữa, áp út, út) uốn cong đỡ vững vàng dưới đáy gờ mép bát (Y = 1.161m).
+ * 2. Tư thế bưng phở chuẩn xác trên mọi góc nhìn (Desktop & Mobile):
+ *    - Hai bàn tay bám chắc 2 bên vành tô sứ (không quay lòng bàn tay về phía camera).
+ *    - Ngón cái tì phẳng tự nhiên trên mặt vành tô sứ khớp chính xác vành miệng bát.
+ *    - 4 ngón tay uốn cong đỡ vững vàng dưới đáy gờ mép bát.
  *    - Cánh tay áo sơ mi trắng muốt nối dài liền mạch từ cổ tay xuyên suốt ra ngoài hai góc màn hình.
  * 3. Phản ứng bỏng nước sôi (Scald Heat Glow):
  *    - Khi nước phở sôi tràn trúng ngón tay, da tay ửng đỏ rát bỏng tự nhiên và giật nảy cơ tinh tế.
@@ -112,11 +112,24 @@ export function createWaiterHands({ skin = {} } = {}) {
   let leftForeArmBone = null;
   let rightForeArmBone = null;
 
+  // Hướng xoay bàn tay chuẩn bưng bát trong hệ tọa độ bát:
+  // Tay trái (bên phải góc nhìn):
+  const leftFwd = new THREE.Vector3(-0.15, -0.05, 0.98).normalize();
+  const leftBack = new THREE.Vector3(0.98, 0.15, 0.0).normalize();
+  const leftThumb = new THREE.Vector3().crossVectors(leftFwd, leftBack).normalize();
+  const leftGripQuat = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(leftFwd, leftBack, leftThumb));
+
+  // Tay phải (bên trái góc nhìn):
+  const rightFwd = new THREE.Vector3(0.15, 0.05, -0.98).normalize();
+  const rightBack = new THREE.Vector3(-0.98, 0.15, 0.0).normalize();
+  const rightThumb = new THREE.Vector3().crossVectors(rightFwd, rightBack).normalize();
+  const rightGripQuat = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(rightFwd, rightBack, rightThumb));
+
   loadXbotModel()
     .then((gltf) => {
       modelScene = cloneSkeleton(gltf.scene);
-      // Đặt nhân vật Xbot tại vị trí người bưng phở sau bát
-      modelScene.position.set(0, -1.15, -0.44);
+      // Gắn nhân vật Xbot đứng thẳng ở vị trí người phục vụ (vai ở y=1.438, z=-0.05)
+      modelScene.position.set(0, 0, 0);
       root.add(modelScene);
 
       modelScene.traverse((child) => {
@@ -139,15 +152,13 @@ export function createWaiterHands({ skin = {} } = {}) {
       rightArmBone = getBone('RightArm');
       rightForeArmBone = getBone('RightForeArm');
       rightHandBone = getBone('RightHand');
-
-      applyCarryingPose();
     })
     .catch((err) => {
       console.error('[WaiterHands] Lỗi tải Xbot.glb:', err);
     });
 
-  function applyCarryingPose() {
-    if (!modelScene || !leftArmBone || !rightArmBone) return;
+  function applyCarryingPose(bowlMeshRoot) {
+    if (!modelScene || !leftArmBone || !rightArmBone || !bowlMeshRoot) return;
 
     modelScene.updateMatrixWorld(true);
 
@@ -162,6 +173,7 @@ export function createWaiterHands({ skin = {} } = {}) {
       const arm = isLeft ? leftArmBone : rightArmBone;
       const foreArm = isLeft ? leftForeArmBone : rightForeArmBone;
       const hand = isLeft ? leftHandBone : rightHandBone;
+      const gripQuat = isLeft ? leftGripQuat : rightGripQuat;
 
       if (!arm || !foreArm || !hand) return;
 
@@ -175,10 +187,11 @@ export function createWaiterHands({ skin = {} } = {}) {
       const L1 = S.distanceTo(E0);
       const L2 = E0.distanceTo(W0);
 
-      // Điểm cổ tay ôm sát bên ngoài vành tô sứ (bán kính 0.140m, cao độ -0.010m cục bộ trong tô, -0.035m sau trục Z)
-      const localTarget = new THREE.Vector3(sign * 0.140, -0.010, -0.035);
-      const targetWorld = localTarget.clone();
-      root.localToWorld(targetWorld);
+      // Điểm cổ tay ôm sát mép ngoài vành tô sứ trong hệ tọa độ bát:
+      // Bán kính miệng bát R=0.125m, cổ tay ở x = sign * 0.138m, y = 0.075m, z = -0.010m
+      const localTargetInBowl = new THREE.Vector3(sign * 0.138, 0.075, -0.010);
+      const targetWorld = localTargetInBowl.clone();
+      bowlMeshRoot.localToWorld(targetWorld);
 
       const ST = targetWorld.clone().sub(S);
       const d = Math.min(ST.length(), (L1 + L2) * 0.999);
@@ -187,8 +200,8 @@ export function createWaiterHands({ skin = {} } = {}) {
       const cosAlpha = (L1 * L1 + d * d - L2 * L2) / (2 * L1 * d);
       const alpha = Math.acos(Math.max(-1, Math.min(1, cosAlpha)));
 
-      // Hướng uốn khuỷu tay: chĩa ra ngoài và xuống dưới tự nhiên
-      const elbowBendDir = new THREE.Vector3(sign * 0.65, -1.0, 0.1);
+      // Hướng uốn khuỷu tay: chĩa ra ngoài và chếch xuống tự nhiên
+      const elbowBendDir = new THREE.Vector3(sign * 0.70, -0.85, 0.20).normalize();
       const bendNormal = new THREE.Vector3().crossVectors(dir, elbowBendDir).normalize();
       const elbowDir = dir.clone().applyAxisAngle(bendNormal, alpha);
       const E = S.clone().add(elbowDir.clone().multiplyScalar(L1));
@@ -205,26 +218,19 @@ export function createWaiterHands({ skin = {} } = {}) {
       foreArm.quaternion.setFromUnitVectors(new THREE.Vector3(sign, 0, 0), lowerLocalDir);
       foreArm.updateMatrixWorld(true);
 
-      // Định hướng bàn tay ôm dọc theo đường cong vành tô sứ (hướng +Z dọc thành tô)
-      const fwd = new THREE.Vector3(sign * -0.15, -0.08, 0.98).normalize();
-      const back = new THREE.Vector3(sign * 0.98, 0.18, 0.0).normalize();
-      const col0 = isLeft ? fwd : fwd.clone().negate();
-      const col1 = back;
-      const col2 = new THREE.Vector3().crossVectors(col0, col1).normalize();
+      // Khóa hướng bàn tay theo vành tô phở (tay nghiêng và lắc chính xác cùng góc nghiêng của tô)
+      const bowlWorldQuat = bowlMeshRoot.getWorldQuaternion(new THREE.Quaternion());
+      const targetHandWorldQuat = bowlWorldQuat.clone().multiply(gripQuat);
+      const parentHandQuat = foreArm.getWorldQuaternion(new THREE.Quaternion());
+      hand.quaternion.copy(parentHandQuat.clone().invert().multiply(targetHandWorldQuat));
 
-      const rotMat = new THREE.Matrix4().makeBasis(col0, col1, col2);
-      const targetWorldQuat = new THREE.Quaternion().setFromRotationMatrix(rotMat);
-
-      const parentWorldQuat = foreArm.getWorldQuaternion(new THREE.Quaternion());
-      hand.quaternion.copy(parentWorldQuat.clone().invert().multiply(targetWorldQuat));
-
-      // Uốn cong 4 ngón tay ôm chắc chắn dưới gờ mép tô sứ
+      // 4 ngón tay uốn cong đỡ vững vàng dưới gờ mép bát
       ['Index', 'Middle', 'Ring', 'Pinky'].forEach((f) => {
         const b1 = getBone(prefix + 'Hand' + f + '1');
         const b2 = getBone(prefix + 'Hand' + f + '2');
         const b3 = getBone(prefix + 'Hand' + f + '3');
-        if (b1) b1.rotation.z = -sign * 0.62;
-        if (b2) b2.rotation.z = -sign * 0.72;
+        if (b1) b1.rotation.z = -sign * 0.65;
+        if (b2) b2.rotation.z = -sign * 0.75;
         if (b3) b3.rotation.z = -sign * 0.55;
       });
 
@@ -232,7 +238,7 @@ export function createWaiterHands({ skin = {} } = {}) {
       const t1 = getBone(prefix + 'HandThumb1');
       const t2 = getBone(prefix + 'HandThumb2');
       const t3 = getBone(prefix + 'HandThumb3');
-      if (t1) t1.rotation.set(0.12, -sign * 0.35, sign * 0.30);
+      if (t1) t1.rotation.set(0.12, -sign * 0.30, sign * 0.25);
       if (t2) t2.rotation.z = sign * 0.20;
       if (t3) t3.rotation.z = -sign * 0.15;
     }
@@ -242,11 +248,11 @@ export function createWaiterHands({ skin = {} } = {}) {
   }
 
   let scaldTimer = 0.0;
-  function update(physState, dt) {
+  function update(physState, dt, bowlMeshRoot) {
     if (!modelScene) return;
 
-    // Cập nhật vị trí tay ôm vành bát khi bát nghiêng/nhấp nhô
-    applyCarryingPose();
+    // Cập nhật vị trí tay ôm vành bát đồng bộ với chuyển động và độ nghiêng của bát
+    applyCarryingPose(bowlMeshRoot);
 
     // Khi nước phở sôi tràn mép gây bỏng
     if (physState.isScalded) {

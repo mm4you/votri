@@ -1,19 +1,20 @@
 /**
  * @file waiterModel.js
  * @description Mô hình Người Phục Vụ Bưng Phở Góc Nhìn Thứ Nhất (First-Person Waiter Rig):
- * - Theo yêu cầu: Chỉ cần 2 bàn tay bưng bát, không cần full nhân vật.
- * - 1 góc camera cố định trực diện tô phở ngon lành, bao quát toàn cảnh hành lang quán ăn phía trước.
- * - Mô phỏng nhịp thở và nhịp bước chân nhấp nhô tự nhiên của người phục vụ khi bưng tô phở nóng.
+ * - Đôi cánh tay người phục vụ bằng lưới SkinnedMesh Xbot gắn liền vào tư thế người bưng.
+ * - Khung đỡ tô phở nhấp nhô và nghiêng tự nhiên theo bước chân người đi.
+ * - Hai bàn tay tự động bám chặt hai bên vành tô phở trên mọi độ nghiêng.
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { createPhoBowlModel } from './phoModel.js?v=73';
+import { createPhoBowlModel } from './phoModel.js?v=75';
+import { createWaiterHands } from './waiterHands.js?v=75';
 
 export function createWaiterCharacter({ skin = {} } = {}) {
   const root = new THREE.Group();
   root.name = 'waiter-character-root';
 
-  // Khung đỡ tô phở và đôi tay
+  // Khung đỡ tô phở
   const bowlHolder = new THREE.Group();
   bowlHolder.name = 'pho-bowl-holder';
   bowlHolder.position.set(0, 1.15, 0.44);
@@ -22,14 +23,19 @@ export function createWaiterCharacter({ skin = {} } = {}) {
   const phoBowl = createPhoBowlModel({ skin });
   bowlHolder.add(phoBowl.root);
 
+  // Đôi cánh tay Xbot gắn vào thân người phục vụ
+  const waiterHands = createWaiterHands({ skin });
+  root.add(waiterHands.root);
+
   function setCameraMode(mode) {
-    // Góc nhìn cố định duy nhất: Góc bưng bát
     bowlHolder.visible = true;
     phoBowl.root.visible = true;
+    waiterHands.root.visible = true;
   }
 
   function update(physState, dt) {
     phoBowl.update(physState, dt);
+    waiterHands.update(physState, dt, phoBowl.root);
 
     const strideFreq = physState.isTiptoeing ? 3.5 : 2.5;
     const gaitPhase = physState.time * strideFreq * Math.PI * 2;
@@ -51,12 +57,14 @@ export function createWaiterCharacter({ skin = {} } = {}) {
 
   function setSkin(skinData) {
     phoBowl.setSkin(skinData);
+    waiterHands.setSkin(skinData);
   }
 
   return {
     root,
     bowlHolder,
     phoBowl,
+    waiterHands,
     setCameraMode,
     update,
     setSkin,

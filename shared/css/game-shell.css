@@ -1396,7 +1396,7 @@ html[lang="en"] .lang__btn[data-lang="en"] {
 @media (max-width: 680px) {
   .game-pad--soup {
     gap: 6px;
-    padding: 0 6px 6px;
+    padding: 0 8px calc(8px + env(safe-area-inset-bottom));
   }
   .game-pad--soup .game-btn {
     height: 48px;
