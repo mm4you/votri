@@ -52,6 +52,8 @@ export function createSoupPhysics(config = SOUP_GAME_CONFIG) {
     fPressed: false,
     jPressed: false,
     spacePressed: false,
+    aPressed: false,
+    dPressed: false,
     forwardSpeed: 0.0,
     lateralVel: 0.0,
     stumbleTimer: 0.0,
@@ -107,10 +109,12 @@ export function createSoupPhysics(config = SOUP_GAME_CONFIG) {
     state.status = 'running';
   }
 
-  function setInputs({ f = false, j = false, space = false }) {
+  function setInputs({ f = false, j = false, space = false, a = false, d = false }) {
     state.fPressed = f;
     state.jPressed = j;
     state.spacePressed = space;
+    state.aPressed = a;
+    state.dPressed = d;
     state.isBlowing = space;
     state.isTiptoeing = space;
   }
@@ -150,37 +154,42 @@ export function createSoupPhysics(config = SOUP_GAME_CONFIG) {
       state.topSpeed = currentSpeedKmh;
     }
 
-    // 2. DI CHUYỂN LẠNG LÁCH TRÁI / PHẢI (Lateral Steering on X-axis)
+    // 2. DI CHUYỂN LẠNG LÁCH TRÁI / PHẢI (Chỉ khi bấm A/D hoặc Mũi tên, F & J chỉ dùng giữ thăng bằng tô phở!)
     let steerDir = 0.0;
-    if (state.fPressed && !state.jPressed) steerDir = -1.0;
-    else if (state.jPressed && !state.fPressed) steerDir = 1.0;
+    if (state.aPressed && !state.dPressed) steerDir = -1.0;
+    else if (state.dPressed && !state.aPressed) steerDir = 1.0;
 
-    const targetLateralVel = steerDir * 1.6;
+    const targetLateralVel = steerDir * 1.2;
     state.lateralVel += (targetLateralVel - state.lateralVel) * 8.0 * dt;
     state.posX += state.lateralVel * dt;
-    state.posX = clamp(state.posX, -1.25, 1.25);
+    // Tự động giữ nhân vật đi thẳng giữa hành lang nếu không cố ý lách A/D
+    if (steerDir === 0.0) {
+      state.posX += (0.0 - state.posX) * 1.5 * dt;
+    }
+    state.posX = clamp(state.posX, -1.15, 1.15);
 
     // 3. DAO ĐỘNG BƯỚC CHÂN TỰ NHIÊN (Gait Sway Oscillation)
-    // Tần số bước chân 2.5Hz tạo lực lắc lư liên tục sang hai bên
+    // Tần số bước chân tạo lực lắc lư nhịp nhàng tự nhiên sang hai bên khi bước đi
     const strideFreq = state.isTiptoeing ? 3.5 : (config.strideFreq || 2.5);
     const gaitPhase = state.time * strideFreq * Math.PI * 2;
-    const gaitIntensity = state.isTiptoeing ? 0.15 : 1.0;
-    const naturalGaitTorque = Math.sin(gaitPhase) * 2.6 * gaitIntensity;
+    const gaitIntensity = state.isTiptoeing ? 0.12 : 1.0;
+    const naturalGaitTorque = Math.sin(gaitPhase) * 3.4 * gaitIntensity;
 
     // 4. LỰC ĐIỀU KHIỂN CỔ TAY (Player Wrist Torque F & J)
     let userTorque = 0.0;
     const tiltPower = config.tiltTorque || 4.8;
     if (state.fPressed && !state.jPressed) {
-      userTorque += tiltPower * 1.4;
+      userTorque += tiltPower * 1.45;
     } else if (state.jPressed && !state.fPressed) {
-      userTorque -= tiltPower * 1.4;
+      userTorque -= tiltPower * 1.45;
     }
 
-    // 5. CƠ CHẾ CON LẮC NGƯỢC MẤT THĂNG BẰNG TỰ NHIÊN (Inverted Pendulum Instability)
-    // Nếu không bấm giữ F/J, trọng lực sẽ kéo bát tự nghiêng nặng hơn
-    const gravityOverturn = state.tiltRoll * 3.0;
-    const passiveWristSpring = -1.8 * state.tiltRoll;
-    const dampingConstant = config.tiltDamping || config.tiltDamp || 3.6;
+    // 5. CƠ CHẾ CON LẮC NGƯỢC & HIỆU ỨNG MẶT THOÁNG CHẤT LỎNG (Free Surface Fluid Mass Shift)
+    // Trọng lượng nước phở dồn sang bên nào sẽ kéo bát tự nghiêng nặng thêm về bên đó
+    const fluidMassTorque = state.waveX * 3.4;
+    const gravityOverturn = state.tiltRoll * 3.5;
+    const passiveWristSpring = -1.6 * state.tiltRoll;
+    const dampingConstant = config.tiltDamping || config.tiltDamp || 3.5;
     const passiveDamping = -dampingConstant * state.tiltRollVel;
 
     // 6. KIỂM TRA CHƯỚNG NGẠI VẬT DỌC ĐƯỜNG
@@ -196,30 +205,32 @@ export function createSoupPhysics(config = SOUP_GAME_CONFIG) {
 
         if (!state.passedObstacles.has(obs.id)) {
           if (obs.id === 'cat') {
-            const hitCat = Math.abs(state.posX) < 0.45;
+            const hitCat = Math.abs(state.posX) < 0.50;
             if (hitCat) {
               if (!state.isTiptoeing) {
                 state.passedObstacles.add(obs.id);
-                triggerJolt(2.2, 3.0);
+                triggerJolt(2.6, 3.6);
                 state.activeObstacle.tripped = true;
               } else {
                 state.activeObstacle.tiptoed = true;
               }
             }
           } else if (obs.id === 'puddle') {
-            const onPuddle = state.posX < 0.25;
+            const onPuddle = state.posX < 0.35;
             if (onPuddle) {
-              const puddleSlip = Math.sin(state.time * 16.0) * 0.45;
-              userTorque += puddleSlip * 10.0;
+              const slipDamp = state.isTiptoeing ? 0.25 : 1.0;
+              const puddleSlip = Math.sin(state.time * 18.0) * 0.60 * slipDamp;
+              userTorque += puddleSlip * 12.0;
+              state.lateralVel += Math.cos(state.time * 18.0) * 0.9 * slipDamp;
             }
           } else if (obs.id === 'fan') {
-            externalWind = (obs.windForce || -0.24) * 1.5;
+            externalWind = (obs.windForce || -0.26) * 1.8;
           } else if (obs.id === 'lego') {
-            const hitLego = state.posX > -0.1 && state.posX < 0.65;
+            const hitLego = state.posX > -0.15 && state.posX < 0.70;
             if (hitLego) {
               if (!state.isTiptoeing) {
                 state.passedObstacles.add(obs.id);
-                triggerJolt(-2.4, 3.5);
+                triggerJolt(-2.8, 4.0);
                 state.activeObstacle.tripped = true;
               } else {
                 state.activeObstacle.tiptoed = true;
@@ -235,9 +246,10 @@ export function createSoupPhysics(config = SOUP_GAME_CONFIG) {
       userTorque +
       naturalGaitTorque +
       gravityOverturn +
+      fluidMassTorque +
       passiveWristSpring +
       passiveDamping +
-      externalWind * 5.0;
+      externalWind * 5.5;
 
     state.tiltRollVel += rollTotalAcc * dt;
     state.tiltRoll += state.tiltRollVel * dt;

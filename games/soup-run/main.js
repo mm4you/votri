@@ -8,10 +8,10 @@
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
-import { SOUP_GAME_CONFIG, OBSTACLES, SOUP_SKINS, SOUP_RANKS } from './config.js?v=40';
-import { createSoupPhysics } from './physics.js?v=40';
-import { createWaiterCharacter } from './waiterModel.js?v=40';
-import { createCorridorScene } from './corridorScene.js?v=40';
+import { SOUP_GAME_CONFIG, OBSTACLES, SOUP_SKINS, SOUP_RANKS } from './config.js?v=72';
+import { createSoupPhysics } from './physics.js?v=72';
+import { createWaiterCharacter } from './waiterModel.js?v=72';
+import { createCorridorScene } from './corridorScene.js?v=72';
 import { createSynthEngine } from '../../shared/audio/synthEngine.js?v=40';
 import { createGameCache, portalSettings } from '../../shared/storage/portalCache.js?v=40';
 import { GAMES } from '../../shared/ui/gameRegistry.js?v=40';
@@ -112,6 +112,13 @@ let currentSkin = SOUP_SKINS.find((s) => s.id === settings.skinId) || SOUP_SKINS
 const waiter = createWaiterCharacter({ skin: currentSkin });
 scene.add(waiter.root);
 
+// Đèn chiếu trực diện ấm áp tôn vinh tô phở và đôi bàn tay (Mềm mại, không gắt lóa)
+const bowlFillLight = new THREE.DirectionalLight(0xffedd5, 0.72);
+bowlFillLight.position.set(0.25, 1.85, 0.20);
+bowlFillLight.target.position.set(0, 1.15, 0.44);
+waiter.root.add(bowlFillLight);
+waiter.root.add(bowlFillLight.target);
+
 const corridor = createCorridorScene();
 scene.add(corridor.sceneGroup);
 
@@ -125,6 +132,8 @@ const keysDown = {
   f: false,
   j: false,
   space: false,
+  a: false,
+  d: false,
 };
 
 function updateInputs() {
@@ -132,15 +141,38 @@ function updateInputs() {
     f: keysDown.f,
     j: keysDown.j,
     space: keysDown.space,
+    a: keysDown.a,
+    d: keysDown.d,
   });
 }
 
 window.addEventListener('keydown', (e) => {
+  // F & J chuyên biệt dùng để nghiêng nâng mép giữ thăng bằng tô phở (không làm lệch hướng đi!)
   if (e.code === 'KeyF') { keysDown.f = true; updateInputs(); }
   if (e.code === 'KeyJ') { keysDown.j = true; updateInputs(); }
-  if (e.code === 'Space') { keysDown.space = true; updateInputs(); e.preventDefault(); }
+  // A & D / Mũi tên dùng để lạng lách né chướng ngại vật
+  if (e.code === 'KeyA' || e.code === 'ArrowLeft') { keysDown.a = true; updateInputs(); }
+  if (e.code === 'KeyD' || e.code === 'ArrowRight') { keysDown.d = true; updateInputs(); }
+  if (e.code === 'Space') {
+    e.preventDefault();
+    const isResultVisible = ui.screenResult && !ui.screenResult.hasAttribute('hidden');
+    const isStartVisible = ui.screenStart && !ui.screenStart.hasAttribute('hidden');
+    if (isResultVisible || isStartVisible || physics.state.status !== 'running') {
+      startGame();
+      return;
+    }
+    keysDown.space = true;
+    updateInputs();
+  }
+  if (e.code === 'Enter') {
+    const isResultVisible = ui.screenResult && !ui.screenResult.hasAttribute('hidden');
+    const isStartVisible = ui.screenStart && !ui.screenStart.hasAttribute('hidden');
+    if (isResultVisible || isStartVisible || physics.state.status !== 'running') {
+      startGame();
+    }
+  }
   if (e.code === 'KeyR') {
-    if (physics.state.status === 'running' || physics.state.status === 'lost') {
+    if (physics.state.status === 'running' || physics.state.status === 'lost' || physics.state.status === 'won') {
       startGame();
     }
   }
@@ -149,6 +181,8 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => {
   if (e.code === 'KeyF') { keysDown.f = false; updateInputs(); }
   if (e.code === 'KeyJ') { keysDown.j = false; updateInputs(); }
+  if (e.code === 'KeyA' || e.code === 'ArrowLeft') { keysDown.a = false; updateInputs(); }
+  if (e.code === 'KeyD' || e.code === 'ArrowRight') { keysDown.d = false; updateInputs(); }
   if (e.code === 'Space') { keysDown.space = false; updateInputs(); }
 });
 
@@ -176,21 +210,10 @@ bindTouch(ui.padLeft, 'f');
 bindTouch(ui.padBlow, 'space');
 bindTouch(ui.padRight, 'j');
 
-// Chuyển đổi góc nhìn Camera
-function updateCameraLabel() {
-  const isFirst = settings.cameraMode === 'firstPerson';
-  if (ui.camLabelVi) ui.camLabelVi.textContent = isFirst ? 'Góc Bưng Bát' : 'Góc Sau Lưng';
-  if (ui.camLabelEn) ui.camLabelEn.textContent = isFirst ? 'Bowl View' : 'Chase View';
-  waiter.setCameraMode(settings.cameraMode);
-}
-
+// Cố định duy nhất 1 góc nhìn bưng bát (Ẩn nút toggle theo yêu cầu)
 if (ui.camBtn) {
-  ui.camBtn.addEventListener('click', () => {
-    settings.cameraMode = settings.cameraMode === 'firstPerson' ? 'chase' : 'firstPerson';
-    cache.updateSettings({ cameraMode: settings.cameraMode });
-    updateCameraLabel();
-  });
-  updateCameraLabel();
+  ui.camBtn.setAttribute('hidden', '');
+  ui.camBtn.style.display = 'none';
 }
 
 // Âm thanh Mute Toggle
@@ -293,6 +316,13 @@ if (ui.clearCacheBtn) {
 // Bắt đầu game
 function startGame() {
   physics.start();
+  announcedObstacles.clear();
+  keysDown.f = false;
+  keysDown.j = false;
+  keysDown.space = false;
+  keysDown.a = false;
+  keysDown.d = false;
+  updateInputs();
   waiter.setSkin(currentSkin);
   waiter.setCameraMode(settings.cameraMode);
   ui.screenStart.setAttribute('hidden', '');
@@ -347,16 +377,9 @@ function animate(now) {
   followLight.position.set(posX, 3.4, currentZ - 0.6);
   followLight.target.position.set(posX, 1.0, currentZ + 1.2);
 
-  // 2. GÓC NHÌN CAMERA TRỰC DIỆN TÔ PHỞ CỰC ĐẸP (Không bị che khuất)
-  if (settings.cameraMode === 'firstPerson') {
-    // Góc Bưng Bát: Nhìn dốc 45 độ thẳng vào mặt nước dùng óng ả và topping đầy ắp
-    camera.position.set(posX, 1.62, currentZ + 0.08);
-    camera.lookAt(posX, 1.05, currentZ + 0.65);
-  } else {
-    // Góc Sau Lưng: Nhìn từ phía sau bao quát toàn thân người phục vụ đang bưng bát và bước đi
-    camera.position.set(posX * 0.7, 2.10, currentZ - 2.6);
-    camera.lookAt(posX, 1.20, currentZ + 1.2);
-  }
+  // 2. GÓC NHÌN CAMERA TRỰC DIỆN TÔ PHỞ CỐ ĐỊNH DUY NHẤT (Chân thực, ngon mắt, thấy rõ hành lang)
+  camera.position.set(posX, 1.48, currentZ + 0.05);
+  camera.lookAt(posX, 1.08, currentZ + 0.65);
 
   // 3. Xử lý âm thanh
   if (st.status === 'running') {

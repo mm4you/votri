@@ -17,11 +17,11 @@ export const SOUP_GAME_CONFIG = {
 
   // Vật lý chất lỏng sóng sánh (Coupled Sloshing Fluid Dynamics)
   sloshFreq: 6.8,          // Tần số cộng hưởng dao động sóng nước trong bát (rad/s)
-  sloshDampingNormal: 1.5, // Hệ số cản sóng tự nhiên của nước dùng béo
+  sloshDampingNormal: 1.8, // Hệ số cản sóng tự nhiên của nước dùng béo
   sloshDampingBlown: 8.5,  // Hệ số cản sóng khi thổi phù phù (giữ Space)
-  rimOverflowAngle: 0.165, // Góc nghiêng cộng hưởng tối đa (rad) trước khi tràn miệng bát
-  spillRateBase: 26.0,     // Tốc độ hao hụt nước dùng (%/giây) khi tràn mép
-  scaldThreshold: 0.22,    // Ngưỡng sóng tràn trúng ngón tay gây bỏng "Ái da!"
+  rimOverflowAngle: 0.22,  // Góc nghiêng cộng hưởng tối đa (rad) trước khi tràn miệng bát
+  spillRateBase: 12.0,     // Tốc độ hao hụt nước dùng (%/giây) khi tràn mép
+  scaldThreshold: 0.28,    // Ngưỡng sóng tràn trúng ngón tay gây bỏng "Ái da!"
 
   // Lực bẻ lái giữ thăng bằng của cổ tay (F & J)
   tiltTorque: 4.8,         // Lực xoay cổ tay nâng mép bát khi bấm F / J (rad/s^2)
@@ -88,36 +88,36 @@ export const OBSTACLES = [
 export const SOUP_SKINS = [
   {
     id: 'blue-pattern',
-    nameVi: 'Gốm Hoa Lam Cổ Truyền',
+    nameVi: 'Sứ Trắng Hoa Lam Sài Gòn',
     nameEn: 'Cobalt Blue Porcelain',
-    bowlColor: 0xfaf8f2,
+    bowlColor: 0xfffefb,
     rimColor: 0x1e3a8a,
-    soupColor: 0xc25e03,
-    roughness: 0.26,
-    metalness: 0.04,
+    soupColor: 0x8c4a22,     // Nước dùng phở bò Nam Bộ: màu lợ lợ hơi đục béo ngậy
+    roughness: 0.10,
+    metalness: 0.02,
     badgeColor: '#1e3a8a',
   },
   {
-    id: 'celadon',
-    nameVi: 'Men Ngọc Thảo Mộc',
-    nameEn: 'Celadon Jade Glaze',
-    bowlColor: 0xdcfce7,
-    rimColor: 0x15803d,
-    soupColor: 0xb45309,
-    roughness: 0.22,
-    metalness: 0.06,
-    badgeColor: '#15803d',
+    id: 'pure-white',
+    nameVi: 'Sứ Trắng Men Bóng Cao Cấp',
+    nameEn: 'Pure Ivory Glaze',
+    bowlColor: 0xffffff,
+    rimColor: 0x64748b,
+    soupColor: 0x914e26,
+    roughness: 0.08,
+    metalness: 0.02,
+    badgeColor: '#e2e8f0',
   },
   {
-    id: 'terracotta',
-    nameVi: 'Tô Đất Nung Mộc Mạc',
-    nameEn: 'Rustic Terracotta Clay',
-    bowlColor: 0x9a3412,
-    rimColor: 0x7c2d12,
-    soupColor: 0xd97706,
-    roughness: 0.65,
-    metalness: 0.02,
-    badgeColor: '#9a3412',
+    id: 'celadon',
+    nameVi: 'Men Ngọc Lái Thiêu',
+    nameEn: 'Celadon Jade Glaze',
+    bowlColor: 0xf1f8f4,
+    rimColor: 0x15803d,
+    soupColor: 0x884620,
+    roughness: 0.12,
+    metalness: 0.04,
+    badgeColor: '#15803d',
   },
 ];
 

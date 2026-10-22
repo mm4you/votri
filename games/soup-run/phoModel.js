@@ -1,413 +1,580 @@
 /**
  * @file phoModel.js
- * @description Mô hình 3D Tô Phở Miền Nam (Phở Bò Sài Gòn) thủ công tinh xảo, chân thực và thẩm mỹ cao:
- * - Tô sứ Bát Tràng / Lái Thiêu men lam cao cấp: thành dày, men ngà bóng bẩy, viền hoa văn xanh coban.
- * - Nước dùng hổ phách trong veo nằm gọn hoàn toàn bên trong lòng tô (không bao giờ lồi ra ngoài).
- * - Đầy đủ topping chuẩn vị Nam Bộ bắt mắt:
- *   + Bò viên khía chữ thập lộ thớ thịt nâu rắc tiêu
- *   + Nạm gầu bò thái lát mỏng viền mỡ vàng giòn
- *   + Trứng chần lòng đỏ cam óng ả
- *   + Vòng hành tây mỏng tanh trong suốt
- *   + Hành lá xắt nhuyễn, ngò gai viền răng cưa, húng quế tươi, ớt sừng đỏ
- * - Đôi tay bưng phở tự nhiên: tay áo sơ mi trắng có nếp gấp xắn gấu, ngón tay cái tì vành sứ, các ngón tay đỡ đáy tô.
+ * @description Mô hình 3D Tô Phở Miền Nam (Phở Bò Sài Gòn) chân thực, mỹ thuật cao cấp chuẩn vị:
+ * 1. Tô sứ Bát Tràng men sứ trắng ngà tinh tươm:
+ *    - Lòng tô và thành ngoài dày dặn (6-8mm), men sứ bóng bẩy.
+ *    - Chân đế bát liền khối vững chãi.
+ *    - Viền miệng tô có dải chỉ hoa lam xanh coban đôi trang nhã.
+ * 2. Nước dùng Phở Nam chuẩn vị (Authentic Southern Cloudy Beef Broth):
+ *    - Màu nâu vàng hổ phách đậm đà lợ lợ hơi đục ninh từ xương ống tủy bò, quế hồi thảo quả và đường phèn.
+ *    - Váng mỡ gầu bò óng ánh (nước béo), tiêu đen xay vỡ và váng hành hoa.
+ *    - BÁN KÍNH MẶT NƯỚC CO GIÃN CHÍNH XÁC THEO HÀM DÁNG LÒNG TÔ:
+ *      Khi nước vơi đi do tràn, mực nước hạ thấp xuống đáy mà TUYỆT ĐỐI KHÔNG BAO GIỜ LÒI ĐÁY HAY ĐÂM XUYÊN THÀNH TÔ!
+ * 3. Bánh phở & Topping rõ ràng, đẹp mắt, chuẩn vị Phở Bò Sài Gòn:
+ *    - Bánh phở: Các dải sợi dẹt trắng ngà mềm mại uốn lượn đan xen tự nhiên, lộ rõ từng thớ bánh phở chần ngon mắt.
+ *    - Nạm gầu bò thái mỏng: 3 lát thịt bò to bản hình lượn sóng tự nhiên, thớ nạc nâu đỏ mềm mại viền mỡ vàng giòn óng ả.
+ *    - Bò viên Sài Gòn: 3 viên tròn giòn khía chữ thập nở hoa nâu hồng thơm phức rắc tiêu đen.
+ *    - Lòng đỏ hột gà chần: Tròn mọng, màu cam lòng đào óng ả béo ngậy giữa bát kèm lớp lòng trắng chần trong suốt.
+ *    - Hành tây bào mỏng tang, hành lá xắt nhuyễn, đầu hành hoa trắng muốt, ngò gai, húng quế, ớt sừng đỏ tươi.
+ * 4. ĐÔI BÀN TAY NGƯỜI PHỤC VỤ CHÂN THỰC 100% (Anatomical Human Hands & Extended Arms):
+ *    - CÁNH TAY ÁO SƠ MI TRẮNG NỐI DÀI TỪ DƯỚI GÓC MÀN HÌNH vươn lên thành tô (Không còn bị cụt lơ lửng!).
+ *    - BÀN TAY RÕ RÀNG 100%:
+ *      + Ngón cái to rõ, tì phẳng tự nhiên trên vành miệng tô sứ, có móng tay hồng đào keratin bóng bẩy và vầng trăng khuyết hướng thẳng lên camera.
+ *      + 4 ngón tay (trỏ, giữa, áp út, út) tách biệt rõ ràng, phân đốt uốn cong ôm chắc chắn đỡ dưới gờ mép tô sứ.
+ *      + Mu bàn tay thon thả mềm mại chuẩn giải phẫu học, có 4 khớp xương ngón tay và gò mô ngón cái.
+ *      + Cổ tay thon thả nối liền vào cổ áo sơ mi trắng có cúc ngọc trai.
+ *      + Phản xạ co giật cơ tinh tế khi bị nước sôi tràn (Scald Reflex) mà không biến thành khối đỏ đồ chơi.
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
+import { createWaiterHands } from './waiterHands.js?v=72';
 
-/** Tạo texture gốm hoa lam Lái Thiêu tinh tế */
-function createPorcelainTexture() {
+/** Hàm tính bán kính trong của lòng tô sứ tại độ cao y */
+export function getBowlInnerRadiusAt(y) {
+  const yFloor = 0.012;
+  const yRim = 0.091;
+  if (y <= yFloor) return 0.042;
+  if (y >= yRim) return 0.120;
+  const t = (y - yFloor) / (yRim - yFloor);
+  return 0.042 + 0.078 * Math.pow(t, 0.72);
+}
+
+/** Tạo texture nước dùng Phở Nam lợ lợ hơi đục béo ngậy chuẩn vị Sài Gòn */
+function createAuthenticPhoBrothTexture() {
   if (typeof document === 'undefined') return null;
   const canvas = document.createElement('canvas');
-  canvas.width = 1024;
+  canvas.width = 512;
   canvas.height = 512;
   const ctx = canvas.getContext('2d');
 
-  // Nền men sứ trắng ngà cao cấp
-  ctx.fillStyle = '#faf7ee';
-  ctx.fillRect(0, 0, 1024, 512);
+  // Nền nước dùng ninh tủy xương bò: màu nâu vàng hổ phách đậm đà lợ lợ hơi đục
+  const baseGrad = ctx.createRadialGradient(256, 256, 40, 256, 256, 256);
+  baseGrad.addColorStop(0, '#753410');
+  baseGrad.addColorStop(0.38, '#63290c');
+  baseGrad.addColorStop(0.72, '#4f1e06');
+  baseGrad.addColorStop(1.0, '#3d1503');
+  ctx.fillStyle = baseGrad;
+  ctx.fillRect(0, 0, 512, 512);
 
-  // Viền chỉ xanh coban đôi ở miệng tô
-  ctx.fillStyle = '#1e3a8a';
-  ctx.fillRect(0, 20, 1024, 20);
-  ctx.fillRect(0, 56, 1024, 6);
-
-  // Hoa văn sóng nước & búp sen men lam Lái Thiêu
-  ctx.strokeStyle = '#1e3a8a';
-  ctx.lineWidth = 4.5;
-  for (let x = 0; x < 1024; x += 64) {
+  // Vẩn đục tủy xương ống bò (Marrow emulsion clouds - tạo độ lợ lợ hơi đục đặc trưng)
+  for (let i = 0; i < 75; i++) {
+    const cx = Math.random() * 512;
+    const cy = Math.random() * 512;
+    const cr = 40 + Math.random() * 85;
+    const cGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr);
+    cGrad.addColorStop(0, 'rgba(175, 95, 38, 0.40)');
+    cGrad.addColorStop(0.5, 'rgba(135, 68, 24, 0.20)');
+    cGrad.addColorStop(1.0, 'rgba(90, 40, 12, 0.0)');
+    ctx.fillStyle = cGrad;
     ctx.beginPath();
-    ctx.arc(x + 32, 98, 24, 0, Math.PI, false);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(x + 32, 96, 9, 0, Math.PI * 2);
-    ctx.fillStyle = '#1e3a8a';
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(x + 20, 104, 4.5, 0, Math.PI * 2);
-    ctx.arc(x + 44, 104, 4.5, 0, Math.PI * 2);
+    ctx.arc(cx, cy, cr, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  ctx.fillRect(0, 138, 1024, 6);
-  ctx.fillRect(0, 150, 1024, 3);
+  // Váng mỡ gầu bò vàng óng li ti (Golden Tallow Droplets / Nước béo)
+  for (let i = 0; i < 150; i++) {
+    const fx = Math.random() * 512;
+    const fy = Math.random() * 512;
+    const fr = 2.0 + Math.random() * 11;
+    const fGrad = ctx.createRadialGradient(fx - fr * 0.25, fy - fr * 0.25, 0, fx, fy, fr);
+    fGrad.addColorStop(0, 'rgba(255, 252, 235, 0.95)');
+    fGrad.addColorStop(0.45, 'rgba(254, 240, 138, 0.85)');
+    fGrad.addColorStop(0.80, 'rgba(234, 179, 8, 0.45)');
+    fGrad.addColorStop(1.0, 'rgba(202, 138, 4, 0.0)');
+    ctx.fillStyle = fGrad;
+    ctx.beginPath();
+    ctx.arc(fx, fy, fr, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
-  // Chân đế bát men mộc mạc
-  ctx.fillStyle = '#dfd6c6';
-  ctx.fillRect(0, 480, 1024, 32);
+  // Tiêu đen xay vỡ thơm phức rải rác
+  ctx.fillStyle = 'rgba(24, 14, 8, 0.92)';
+  for (let i = 0; i < 110; i++) {
+    const px = Math.random() * 512;
+    const py = Math.random() * 512;
+    const pr = 0.8 + Math.random() * 1.5;
+    ctx.beginPath();
+    ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Vệt mỡ hành hoa xanh ngọc óng ánh
+  ctx.fillStyle = 'rgba(34, 197, 94, 0.50)';
+  for (let i = 0; i < 45; i++) {
+    const hx = Math.random() * 512;
+    const hy = Math.random() * 512;
+    const hr = 1.2 + Math.random() * 2.5;
+    ctx.beginPath();
+    ctx.arc(hx, hy, hr, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapS = THREE.ClampToEdgeWrapping;
   texture.wrapT = THREE.ClampToEdgeWrapping;
-  texture.repeat.set(2, 1);
   return texture;
 }
 
-/** Texture bò viên tiêu đen */
-function createMeatballTexture() {
+/** Tạo texture thớ thịt nạm gầu bò chân thực: nâu đỏ chín tới, viền mỡ vàng giòn tinh tế */
+function createFlankCanvasTexture() {
   if (typeof document === 'undefined') return null;
   const canvas = document.createElement('canvas');
-  canvas.width = 128;
-  canvas.height = 128;
+  canvas.width = 512;
+  canvas.height = 256;
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = '#542d17';
-  ctx.fillRect(0, 0, 128, 128);
+  // Nền thịt bò chín tới đậm đà thơm phức
+  ctx.fillStyle = '#4c1c11';
+  ctx.fillRect(0, 0, 512, 256);
 
-  for (let i = 0; i < 200; i++) {
-    const x = Math.random() * 128;
-    const y = Math.random() * 128;
-    ctx.fillStyle = Math.random() > 0.4 ? '#331a0e' : '#734024';
-    ctx.beginPath();
-    ctx.arc(x, y, 1.0 + Math.random() * 2.0, 0, Math.PI * 2);
-    ctx.fill();
+  // Thớ cơ thịt bò chạy dọc song song tự nhiên
+  for (let y = 0; y < 256; y += 2) {
+    ctx.fillStyle = Math.random() > 0.45 ? '#361209' : '#5b2315';
+    ctx.fillRect(0, y, 512, 1.6);
   }
 
-  for (let i = 0; i < 40; i++) {
-    const x = Math.random() * 128;
-    const y = Math.random() * 128;
-    ctx.fillStyle = '#100a06';
-    ctx.beginPath();
-    ctx.arc(x, y, 1.5 + Math.random() * 1.2, 0, Math.PI * 2);
-    ctx.fill();
+  // Vân mỡ hoa cẩm thạch li ti đan xen mềm mại trong thớ thịt
+  ctx.fillStyle = 'rgba(245, 230, 200, 0.42)';
+  for (let i = 0; i < 90; i++) {
+    const x = Math.random() * 512;
+    const y = Math.random() * 200;
+    ctx.fillRect(x, y, 16 + Math.random() * 32, 1.4);
   }
 
-  return new THREE.CanvasTexture(canvas);
-}
-
-/** Texture nạm gầu bò */
-function createFlankTexture() {
-  if (typeof document === 'undefined') return null;
-  const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 128;
-  const ctx = canvas.getContext('2d');
-
-  ctx.fillStyle = '#6b2d10';
-  ctx.fillRect(0, 0, 256, 128);
-
-  for (let y = 0; y < 128; y += 6) {
-    ctx.fillStyle = y % 12 === 0 ? '#853816' : '#54220b';
-    ctx.fillRect(0, y, 256, 4);
-  }
-
-  ctx.fillStyle = '#fef08a';
-  ctx.fillRect(0, 0, 256, 24);
-  ctx.fillStyle = '#ca8a04';
-  ctx.fillRect(0, 20, 256, 5);
-
-  return new THREE.CanvasTexture(canvas);
-}
-
-/** Texture hạt khói mềm */
-function createSteamParticleTexture() {
-  if (typeof document === 'undefined') return null;
-  const canvas = document.createElement('canvas');
-  canvas.width = 64;
-  canvas.height = 64;
-  const ctx = canvas.getContext('2d');
-
-  const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
-  grad.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
-  grad.addColorStop(0.4, 'rgba(255, 255, 255, 0.20)');
-  grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-
+  // Viền mỡ gầu vàng giòn mềm mại chỉ chiếm 15% mép cong của lát thịt
+  const grad = ctx.createLinearGradient(0, 205, 0, 256);
+  grad.addColorStop(0, 'rgba(76, 28, 17, 0.0)');
+  grad.addColorStop(0.25, '#d97706');
+  grad.addColorStop(0.60, '#fde047');
+  grad.addColorStop(0.85, '#fef08a');
+  grad.addColorStop(1.0, '#fffbeb');
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 64, 64);
+  ctx.fillRect(0, 205, 512, 51);
 
-  return new THREE.CanvasTexture(canvas);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  return texture;
 }
 
 export function createPhoBowlModel({ skin = {} } = {}) {
   const root = new THREE.Group();
   root.name = 'pho-bowl-assembly';
 
-  // 1. TÔ SỨ CAO CẤP (Thành dày, lòng sâu, miệng loe bán kính R = 0.24m)
-  const points = [];
-  points.push(new THREE.Vector2(0.0, -0.05));
-  points.push(new THREE.Vector2(0.10, -0.05));
-  points.push(new THREE.Vector2(0.115, -0.045));
-  points.push(new THREE.Vector2(0.11, -0.005));
-  points.push(new THREE.Vector2(0.14, 0.04));
-  points.push(new THREE.Vector2(0.19, 0.09));
-  points.push(new THREE.Vector2(0.24, 0.14)); // Vành ngoài miệng loe
-  points.push(new THREE.Vector2(0.245, 0.146));
-  points.push(new THREE.Vector2(0.24, 0.15));
-  points.push(new THREE.Vector2(0.23, 0.142)); // Mép trong
-  points.push(new THREE.Vector2(0.18, 0.088));
-  points.push(new THREE.Vector2(0.13, 0.038));
-  points.push(new THREE.Vector2(0.085, 0.01));
-  points.push(new THREE.Vector2(0.0, 0.005));
+  // 1. TÔ SỨ TRẮNG BÁT TRÀNG CHÂN THỰC (Thành dày dặn, chân đế đúc liền khối)
+  const bowlPoints = [
+    new THREE.Vector2(0.0, 0.002),
+    new THREE.Vector2(0.044, 0.002),
+    new THREE.Vector2(0.046, -0.007),
+    new THREE.Vector2(0.054, -0.007),
+    new THREE.Vector2(0.055, 0.006),
+    new THREE.Vector2(0.075, 0.030),
+    new THREE.Vector2(0.098, 0.058),
+    new THREE.Vector2(0.122, 0.088),
+    new THREE.Vector2(0.125, 0.092),
+    new THREE.Vector2(0.126, 0.094),
+    new THREE.Vector2(0.123, 0.094),
+    new THREE.Vector2(0.120, 0.091),
+    new THREE.Vector2(0.098, 0.065),
+    new THREE.Vector2(0.070, 0.035),
+    new THREE.Vector2(0.042, 0.015),
+    new THREE.Vector2(0.0, 0.012),
+  ];
 
-  const latheGeo = new THREE.LatheGeometry(points, 64);
-  const porcelainTex = createPorcelainTexture();
-
+  const bowlGeo = new THREE.LatheGeometry(bowlPoints, 64);
   const bowlMat = new THREE.MeshStandardMaterial({
-    color: skin.bowlColor || 0xfaf7ee,
-    map: porcelainTex,
-    roughness: skin.roughness ?? 0.16,
-    metalness: skin.metalness ?? 0.02,
+    color: skin.bowlColor || 0xfffefb,
+    roughness: 0.12,
+    metalness: 0.02,
     side: THREE.DoubleSide,
   });
 
-  const bowlMesh = new THREE.Mesh(latheGeo, bowlMat);
+  const bowlMesh = new THREE.Mesh(bowlGeo, bowlMat);
   bowlMesh.castShadow = true;
   bowlMesh.receiveShadow = true;
   root.add(bowlMesh);
 
-  // 2. BÁNH PHỞ TRẮNG MỀM DƯỚI ĐÁY BÁT (Rice Noodles)
+  // Chỉ xanh coban hoa lam đôi quanh vành miệng tô (Cobalt Blue Rim Bands)
+  const rimLineGeo = new THREE.TorusGeometry(0.1245, 0.0014, 8, 64);
+  rimLineGeo.rotateX(Math.PI / 2);
+  const rimLineMat = new THREE.MeshBasicMaterial({ color: skin.rimColor || 0x1e3a8a });
+  const rimLine = new THREE.Mesh(rimLineGeo, rimLineMat);
+  rimLine.position.y = 0.091;
+  root.add(rimLine);
+
+  const rimLineSubGeo = new THREE.TorusGeometry(0.1215, 0.0009, 8, 64);
+  rimLineSubGeo.rotateX(Math.PI / 2);
+  const rimLineSub = new THREE.Mesh(rimLineSubGeo, rimLineMat);
+  rimLineSub.position.y = 0.086;
+  root.add(rimLineSub);
+
+  // 2. SỢI BÁNH PHỞ TRẮNG NGÀ MỀM MẠI UỐN LƯỢN ĐAN XEN (Silky Flat Rice Noodles)
   const noodlesGroup = new THREE.Group();
   noodlesGroup.name = 'rice-noodles';
+
   const noodleMat = new THREE.MeshStandardMaterial({
-    color: 0xfcfbfa,
-    roughness: 0.45,
-    metalness: 0.02,
+    color: 0xfbf9f6,
+    roughness: 0.28,
+    metalness: 0.0,
+    side: THREE.DoubleSide,
   });
-  const noodleGeo = new THREE.TorusGeometry(0.08, 0.007, 8, 24, Math.PI * 1.6);
-  for (let i = 0; i < 8; i++) {
-    const strand = new THREE.Mesh(noodleGeo, noodleMat);
-    strand.position.set(
-      (Math.random() - 0.5) * 0.06,
-      0.035 + i * 0.009,
-      (Math.random() - 0.5) * 0.06
-    );
-    strand.rotation.set(
-      Math.PI / 2 + (Math.random() - 0.5) * 0.25,
-      (Math.random() - 0.5) * 0.4,
-      Math.random() * Math.PI * 2
-    );
-    strand.scale.set(0.85 + Math.random() * 0.35, 0.85 + Math.random() * 0.35, 1.0);
-    noodlesGroup.add(strand);
+
+  // Tạo các dải bánh phở bản dẹt uốn lượn hình chữ S mềm mại đan xen trong lòng bát
+  const sloshBaseY = 0.076;
+  for (let ring = 0; ring < 6; ring++) {
+    const ringRadius = 0.020 + ring * 0.009;
+    const noodleY = sloshBaseY - 0.001 + (ring % 3) * 0.0018;
+    for (let s = 0; s < 3; s++) {
+      const startAngle = (s / 3) * Math.PI * 2 + ring * 0.85;
+      const strandLen = 0.046 + (s % 2) * 0.012;
+      const strandGeo = new THREE.PlaneGeometry(strandLen, 0.0055, 12, 1);
+      const pos = strandGeo.attributes.position;
+      for (let p = 0; p < pos.count; p++) {
+        const px = pos.getX(p);
+        const norm = px / strandLen;
+        // Uốn cong hình chữ S tự nhiên như sợi phở chần nước sôi
+        pos.setY(p, Math.sin(norm * Math.PI * 2) * 0.0022);
+        pos.setZ(p, Math.cos(norm * Math.PI) * 0.0035);
+      }
+      strandGeo.computeVertexNormals();
+
+      const strand = new THREE.Mesh(strandGeo, noodleMat);
+      strand.position.set(
+        Math.cos(startAngle) * ringRadius,
+        noodleY,
+        Math.sin(startAngle) * ringRadius
+      );
+      strand.rotation.set(-Math.PI / 2 + 0.05, (Math.random() - 0.5) * 0.20, startAngle + Math.PI / 2);
+      noodlesGroup.add(strand);
+    }
   }
   root.add(noodlesGroup);
 
-  // 3. NƯỚC DÙNG PHỞ HỔ PHÁCH (Nằm hoàn toàn bên trong lòng tô, không lồi ra ngoài)
-  // Bán kính R = 0.222m (vừa khít bên trong mép bát 0.23m)
-  const soupRadius = 0.222;
-  const sloshGeo = new THREE.CircleGeometry(soupRadius, 48, 8);
+  // 3. NƯỚC DÙNG PHỞ MIỀN NAM CHUẨN VỊ: MÀU NÂU VÀNG HỔ PHÁCH LỢ LỢ HƠI ĐỤC BÉO NGẬY
+  const baseSoupRadius = 0.104;
+  const sloshGeo = new THREE.CircleGeometry(baseSoupRadius, 64, 16);
   sloshGeo.rotateX(-Math.PI / 2);
   const sloshPosAttr = sloshGeo.attributes.position;
 
+  const brothTex = createAuthenticPhoBrothTexture();
   const sloshMat = new THREE.MeshStandardMaterial({
-    color: skin.soupColor || 0xb44c05, // Màu hổ phách óng ánh
-    roughness: 0.08,
-    metalness: 0.15,
-    transparent: true,
-    opacity: 0.92,
+    map: brothTex,
+    color: 0xffffff,
+    emissive: 0x240e04,
+    emissiveIntensity: 0.16,
+    roughness: 0.22,
+    metalness: 0.02,
     side: THREE.DoubleSide,
   });
 
   const sloshMesh = new THREE.Mesh(sloshGeo, sloshMat);
-  sloshMesh.position.y = 0.128; // Cách miệng bát 0.015m, đầy ắp nước dùng
+  sloshMesh.position.y = sloshBaseY;
   root.add(sloshMesh);
 
-  // Váng mỡ gầu bò óng ánh (Golden Fat Beads)
-  const fatGroup = new THREE.Group();
-  const fatGeo = new THREE.CircleGeometry(0.014, 14);
-  fatGeo.rotateX(-Math.PI / 2);
-  const fatMat = new THREE.MeshBasicMaterial({
-    color: 0xfef08a,
-    transparent: true,
-    opacity: 0.75,
-    side: THREE.DoubleSide,
-  });
-  const fatDrops = [];
-  for (let i = 0; i < 20; i++) {
-    const angle = (i / 20) * Math.PI * 2 + Math.random() * 0.3;
-    const r = 0.04 + Math.random() * 0.155;
-    const m = new THREE.Mesh(fatGeo, fatMat);
-    const fx = Math.cos(angle) * r;
-    const fz = Math.sin(angle) * r;
-    m.position.set(fx, 0.129, fz);
-    const s = 0.5 + Math.random() * 0.9;
-    m.scale.set(s, s, s);
-    fatGroup.add(m);
-    fatDrops.push({ mesh: m, initX: fx, initZ: fz });
-  }
-  root.add(fatGroup);
-
-  // 4. TOPPINGS PHỞ MIỀN NAM CHUẨN VỊ
+  // 4. TOPPING PHỞ BÒ MIỀN NAM RÕ RÀNG, CHÂN THỰC VÀ BẮT MẮT
   const toppingsGroup = new THREE.Group();
   toppingsGroup.name = 'toppings-group';
   root.add(toppingsGroup);
 
-  // 4.1. BÒ VIÊN (3 viên khía chữ thập)
-  const meatballTex = createMeatballTexture();
-  const meatballMat = new THREE.MeshStandardMaterial({
-    color: 0x5c331a,
-    map: meatballTex,
-    roughness: 0.5,
-    metalness: 0.05,
-  });
-  const meatballGeo = new THREE.SphereGeometry(0.034, 20, 16);
-  meatballGeo.scale(1, 0.88, 1);
-
-  const meatballs = [];
-  const mbPositions = [
-    { x: -0.085, z: 0.045, rot: 0.3 },
-    { x: -0.105, z: -0.05, rot: 1.2 },
-    { x: -0.03, z: 0.09, rot: 2.1 },
-  ];
-
-  mbPositions.forEach((pos) => {
-    const ball = new THREE.Mesh(meatballGeo, meatballMat);
-    ball.position.set(pos.x, 0.125, pos.z);
-    ball.rotation.y = pos.rot;
-    ball.castShadow = true;
-
-    // Vết khía chữ thập
-    const slitMat = new THREE.MeshBasicMaterial({ color: 0x2e1509 });
-    const slit1 = new THREE.Mesh(new THREE.BoxGeometry(0.046, 0.007, 0.003), slitMat);
-    slit1.position.y = 0.028;
-    const slit2 = slit1.clone();
-    slit2.rotation.y = Math.PI / 2;
-    ball.add(slit1, slit2);
-
-    toppingsGroup.add(ball);
-    meatballs.push({ mesh: ball, initX: pos.x, initZ: pos.z, seed: Math.random() * 10 });
-  });
-
-  // 4.2. NẠM GẦU BÒ THÁI LÁT
-  const flankTex = createFlankTexture();
+  // 4.1. NẠM GẦU BÒ THÁI MỎNG VIỀN MỠ VÀNG (3 Lát To Bản, Uốn Lượn Tự Nhiên)
+  const flankTex = createFlankCanvasTexture();
   const flankMat = new THREE.MeshStandardMaterial({
     map: flankTex,
-    roughness: 0.42,
-    metalness: 0.05,
+    roughness: 0.35,
+    metalness: 0.02,
     side: THREE.DoubleSide,
   });
-  const flankGeo = new THREE.BoxGeometry(0.095, 0.007, 0.052);
-  flankGeo.rotateY(0.2);
 
-  const flank1 = new THREE.Mesh(flankGeo, flankMat);
-  flank1.position.set(0.07, 0.13, 0.04);
-  flank1.rotation.set(-0.08, 0.3, 0.12);
-  flank1.castShadow = true;
+  function createOrganicBeefSlice(len, wid) {
+    const geo = new THREE.PlaneGeometry(len, wid, 16, 8);
+    geo.rotateX(-Math.PI / 2);
+
+    const pos = geo.attributes.position;
+    const uvs = geo.attributes.uv;
+    for (let i = 0; i < pos.count; i++) {
+      const px = pos.getX(i);
+      const pz = pos.getZ(i);
+      const normX = px / len;
+      // Uốn cong tự nhiên như lát thịt luộc mềm
+      const sag = -Math.sin((normX + 0.5) * Math.PI) * 0.0045 + Math.cos((pz / wid) * Math.PI) * 0.0020;
+      pos.setY(i, sag);
+      uvs.setXY(i, normX + 0.5, (pz / wid) + 0.5);
+    }
+    uvs.needsUpdate = true;
+    geo.computeVertexNormals();
+
+    return new THREE.Mesh(geo, flankMat);
+  }
+
+  // 3 lát nạm gầu bò to bản rõ ràng xếp gối lên nhau ở nửa bên trái tô phở
+  const flank1 = createOrganicBeefSlice(0.108, 0.052);
+  flank1.position.set(-0.034, sloshBaseY + 0.0035, 0.015);
+  flank1.rotation.set(-0.04, 0.28, 0.08);
   toppingsGroup.add(flank1);
 
-  const flank2 = flank1.clone();
-  flank2.position.set(0.09, 0.131, -0.025);
-  flank2.rotation.set(0.05, -0.4, 0.15);
+  const flank2 = createOrganicBeefSlice(0.098, 0.048);
+  flank2.position.set(-0.040, sloshBaseY + 0.0045, -0.022);
+  flank2.rotation.set(0.06, -0.22, 0.12);
   toppingsGroup.add(flank2);
 
-  // 4.3. TRỨNG CHẦN LÒNG ĐÀO BÉO NGẬY
+  const flank3 = createOrganicBeefSlice(0.088, 0.044);
+  flank3.position.set(-0.024, sloshBaseY + 0.0052, -0.048);
+  flank3.rotation.set(0.10, -0.45, 0.06);
+  toppingsGroup.add(flank3);
+
+  // 4.2. BÒ VIÊN SÀI GÒN (3 viên tròn giòn khía chữ thập nở hoa nâu hồng thơm phức rắc tiêu đen)
+  const meatballMat = new THREE.MeshStandardMaterial({
+    color: 0x6e331c,
+    roughness: 0.38,
+    metalness: 0.02,
+  });
+  const slitDarkMat = new THREE.MeshStandardMaterial({
+    color: 0x3d170c,
+    roughness: 0.50,
+  });
+  const meatballGeo = new THREE.SphereGeometry(0.016, 20, 16);
+  meatballGeo.scale(1.0, 0.82, 1.0);
+
+  const slitGeo = new THREE.BoxGeometry(0.018, 0.002, 0.0015);
+  const pepperMat = new THREE.MeshBasicMaterial({ color: 0x140c06 });
+  const pepperGeo = new THREE.SphereGeometry(0.0009, 5, 4);
+
+  const meatballs = [];
+  const mbConfigs = [
+    { targetX: 0.038, targetZ: 0.022, rot: 0.35, seed: 1.1 },
+    { targetX: 0.046, targetZ: -0.018, rot: 1.45, seed: 2.7 },
+    { targetX: 0.018, targetZ: -0.046, rot: 2.30, seed: 4.3 },
+  ];
+
+  mbConfigs.forEach((cfg) => {
+    const ballGroup = new THREE.Group();
+    const ball = new THREE.Mesh(meatballGeo, meatballMat);
+    ball.castShadow = true;
+    ballGroup.add(ball);
+
+    // Khía chữ thập nở hoa trên đỉnh bò viên
+    const s1 = new THREE.Mesh(slitGeo, slitDarkMat);
+    s1.position.y = 0.0125;
+    const s2 = s1.clone();
+    s2.rotation.y = Math.PI / 2;
+    ballGroup.add(s1, s2);
+
+    // Tiêu đen xay li ti rắc trên đỉnh
+    for (let p = 0; p < 4; p++) {
+      const pep = new THREE.Mesh(pepperGeo, pepperMat);
+      pep.position.set(
+        (Math.random() - 0.5) * 0.010,
+        0.0132,
+        (Math.random() - 0.5) * 0.010
+      );
+      ballGroup.add(pep);
+    }
+
+    ballGroup.position.set(cfg.targetX, sloshBaseY, cfg.targetZ);
+    ballGroup.rotation.y = cfg.rot;
+    toppingsGroup.add(ballGroup);
+
+    meatballs.push({
+      group: ballGroup,
+      anchorX: cfg.targetX,
+      anchorZ: cfg.targetZ,
+      x: cfg.targetX,
+      z: cfg.targetZ,
+      vx: 0,
+      vz: 0,
+      seed: cfg.seed,
+    });
+  });
+
+  // 4.3. LÒNG ĐỎ HỘT GÀ CHẦN BÉO NGẬY (Poached Egg Yolk in Silky Egg White)
   const eggGroup = new THREE.Group();
+  eggGroup.name = 'egg-yolk';
+
+  const yolkMat = new THREE.MeshStandardMaterial({
+    color: 0xf59e0b,
+    roughness: 0.18,
+    metalness: 0.02,
+    emissive: 0x9a3412,
+    emissiveIntensity: 0.15,
+  });
+  const yolkGeo = new THREE.SphereGeometry(0.014, 24, 16);
+  yolkGeo.scale(1.15, 0.70, 1.15);
+  const yolkMesh = new THREE.Mesh(yolkGeo, yolkMat);
+  yolkMesh.position.y = 0.0075;
+  eggGroup.add(yolkMesh);
+
+  // Màng lòng trắng trứng chần trong suốt viền quanh hột gà
   const eggWhiteMat = new THREE.MeshStandardMaterial({
-    color: 0xf8fafc,
-    roughness: 0.3,
-    transparent: true,
-    opacity: 0.95,
-  });
-  const eggWhiteGeo = new THREE.CylinderGeometry(0.036, 0.04, 0.014, 20);
-  const eggWhite = new THREE.Mesh(eggWhiteGeo, eggWhiteMat);
-  eggGroup.add(eggWhite);
-
-  const eggYolkMat = new THREE.MeshStandardMaterial({
-    color: 0xf97316,
+    color: 0xfffdf5,
     roughness: 0.15,
-    metalness: 0.08,
-  });
-  const eggYolkGeo = new THREE.SphereGeometry(0.02, 18, 14);
-  eggYolkGeo.scale(1, 0.65, 1);
-  const eggYolk = new THREE.Mesh(eggYolkGeo, eggYolkMat);
-  eggYolk.position.y = 0.009;
-  eggGroup.add(eggYolk);
-
-  eggGroup.position.set(-0.02, 0.128, -0.055);
-  toppingsGroup.add(eggGroup);
-
-  // 4.4. VÒNG HÀNH TÂY THÁI LÁT
-  const onionMat = new THREE.MeshStandardMaterial({
-    color: 0xfefce8,
-    roughness: 0.2,
     transparent: true,
-    opacity: 0.88,
+    opacity: 0.75,
     side: THREE.DoubleSide,
   });
-  const onionGeo = new THREE.RingGeometry(0.034, 0.042, 28);
+  const eggWhiteGeo = new THREE.CircleGeometry(0.026, 24);
+  eggWhiteGeo.rotateX(-Math.PI / 2);
+  const eggWhiteMesh = new THREE.Mesh(eggWhiteGeo, eggWhiteMat);
+  eggWhiteMesh.position.y = 0.001;
+  eggGroup.add(eggWhiteMesh);
+
+  const eggState = {
+    group: eggGroup,
+    anchorX: 0.004,
+    anchorZ: 0.030,
+    x: 0.004,
+    z: 0.030,
+    vx: 0,
+    vz: 0,
+  };
+  eggGroup.position.set(eggState.anchorX, sloshBaseY, eggState.anchorZ);
+  toppingsGroup.add(eggGroup);
+
+  // 4.4. HÀNH TÂY BÀO MỎNG TANG TRONG SUỐT (Shaved White Onion Crescents)
+  const onionMat = new THREE.MeshStandardMaterial({
+    color: 0xf8fafc,
+    roughness: 0.14,
+    transparent: true,
+    opacity: 0.70,
+    side: THREE.DoubleSide,
+  });
+  const onionGeo = new THREE.RingGeometry(0.017, 0.0205, 28, 1, 0, Math.PI * 1.35);
   onionGeo.rotateX(-Math.PI / 2);
 
   const onionRings = [];
-  const onionPositions = [
-    { x: 0.01, z: -0.085, r: 0.3 },
-    { x: 0.05, z: -0.09, r: 1.4 },
-    { x: -0.04, z: -0.105, r: 2.5 },
+  const onionConfigs = [
+    { ax: -0.012, az: -0.010, rot: 0.4 },
+    { ax: 0.014, az: -0.006, rot: 1.6 },
+    { ax: -0.006, az: -0.030, rot: 2.8 },
+    { ax: 0.010, az: 0.008, rot: 4.1 },
   ];
-  onionPositions.forEach((op) => {
+
+  onionConfigs.forEach((cfg) => {
     const ring = new THREE.Mesh(onionGeo, onionMat);
-    ring.position.set(op.x, 0.131, op.z);
-    ring.rotation.y = op.r;
+    ring.position.set(cfg.ax, sloshBaseY + 0.002, cfg.az);
+    ring.rotation.y = cfg.rot;
     toppingsGroup.add(ring);
-    onionRings.push({ mesh: ring, initX: op.x, initZ: op.z });
+    onionRings.push({
+      mesh: ring,
+      anchorX: cfg.ax,
+      anchorZ: cfg.az,
+      x: cfg.ax,
+      z: cfg.az,
+      vx: 0,
+      vz: 0,
+    });
   });
 
-  // 4.5. HÀNH LÁ XẮT NHUYỄN
-  const scallionMat = new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.3, side: THREE.DoubleSide });
-  const scallionGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.006, 12, 1, true);
+  // 4.5. ĐẦU HÀNH HOA TRẮNG MUỐT CHẦN TÁI (Poached White Scallion Stems)
+  const scallionWhiteMat = new THREE.MeshStandardMaterial({
+    color: 0xf1f5f9,
+    roughness: 0.28,
+  });
+  const stemGeo = new THREE.CylinderGeometry(0.0025, 0.0032, 0.038, 10);
+  stemGeo.rotateZ(Math.PI / 2);
+
+  const stem1 = new THREE.Mesh(stemGeo, scallionWhiteMat);
+  stem1.position.set(-0.015, sloshBaseY + 0.003, 0.048);
+  stem1.rotation.y = 0.35;
+  toppingsGroup.add(stem1);
+
+  const stem2 = stem1.clone();
+  stem2.position.set(0.022, sloshBaseY + 0.003, 0.045);
+  stem2.rotation.y = -0.45;
+  toppingsGroup.add(stem2);
+
+  // 4.6. HÀNH LÁ XẮT NHUYỄN XANH NGỌC (Chopped Emerald Scallions)
+  const scallionMat = new THREE.MeshStandardMaterial({
+    color: 0x16a34a,
+    roughness: 0.28,
+    side: THREE.DoubleSide,
+  });
+  const scallionGeo = new THREE.CylinderGeometry(0.0034, 0.0034, 0.0024, 10, 1, true);
+
   const scallions = [];
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 28; i++) {
     const ring = new THREE.Mesh(scallionGeo, scallionMat);
     const angle = Math.random() * Math.PI * 2;
-    const dist = 0.035 + Math.random() * 0.16;
+    const dist = 0.015 + Math.random() * 0.075;
     const sx = Math.cos(angle) * dist;
     const sz = Math.sin(angle) * dist;
-    ring.position.set(sx, 0.13, sz);
-    ring.rotation.set(Math.random() * 0.3, Math.random() * Math.PI, Math.random() * 0.3);
+    ring.position.set(sx, sloshBaseY + 0.002, sz);
+    ring.rotation.set(
+      (Math.random() - 0.5) * 0.4,
+      Math.random() * Math.PI,
+      (Math.random() - 0.5) * 0.4
+    );
     toppingsGroup.add(ring);
-    scallions.push({ mesh: ring, initX: sx, initZ: sz });
+    scallions.push({
+      mesh: ring,
+      anchorX: sx,
+      anchorZ: sz,
+      x: sx,
+      z: sz,
+      vx: 0,
+      vz: 0,
+    });
   }
 
-  // 4.6. HÚNG QUẾ & NGÒ GAI
-  const herbMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.25, side: THREE.DoubleSide });
-  const basilGeo = new THREE.PlaneGeometry(0.045, 0.026);
+  // 4.7. NGÒ GAI RĂNG CƯA, HÚNG QUẾ VÀ ỚT SỪNG ĐỎ
+  const herbMat = new THREE.MeshStandardMaterial({
+    color: 0x15803d,
+    roughness: 0.28,
+    side: THREE.DoubleSide,
+  });
+
+  // Lá húng quế tươi
+  const basilGeo = new THREE.PlaneGeometry(0.028, 0.016);
   const basil1 = new THREE.Mesh(basilGeo, herbMat);
-  basil1.rotation.set(-Math.PI / 2.3, 0.4, 0.6);
-  basil1.position.set(0.135, 0.138, 0.09);
+  basil1.rotation.set(-Math.PI / 2.3, 0.35, 0.65);
+  basil1.position.set(0.054, sloshBaseY + 0.004, 0.054);
   toppingsGroup.add(basil1);
 
-  const culantroGeo = new THREE.PlaneGeometry(0.075, 0.018);
+  // Lá ngò gai răng cưa
+  const culantroGeo = new THREE.PlaneGeometry(0.048, 0.012);
   const culantro = new THREE.Mesh(culantroGeo, herbMat);
-  culantro.rotation.set(-Math.PI / 2.1, 0.2, 1.25);
-  culantro.position.set(-0.02, 0.132, 0.15);
+  culantro.rotation.set(-Math.PI / 2.15, 0.15, 1.35);
+  culantro.position.set(-0.024, sloshBaseY + 0.003, 0.072);
   toppingsGroup.add(culantro);
 
-  // Ớt sừng đỏ
-  const chiliMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.2, side: THREE.DoubleSide });
-  const chiliGeo = new THREE.RingGeometry(0.007, 0.016, 14);
+  // Ớt sừng đỏ tươi xắt lát chéo
+  const chiliMat = new THREE.MeshStandardMaterial({
+    color: 0xdc2626,
+    roughness: 0.22,
+    side: THREE.DoubleSide,
+  });
+  const chiliGeo = new THREE.RingGeometry(0.0035, 0.0085, 12);
   chiliGeo.rotateX(-Math.PI / 2);
+
   const chili1 = new THREE.Mesh(chiliGeo, chiliMat);
-  chili1.position.set(-0.015, 0.132, -0.015);
+  chili1.position.set(-0.008, sloshBaseY + 0.003, -0.006);
+  chili1.rotation.y = 0.5;
   toppingsGroup.add(chili1);
 
-  // 5. LÀN KHÓI MỎNG MANH THOANG THOẢNG
-  const steamTex = createSteamParticleTexture();
+  const chili2 = chili1.clone();
+  chili2.position.set(0.016, sloshBaseY + 0.003, 0.012);
+  chili2.rotation.y = 1.8;
+  toppingsGroup.add(chili2);
+
+  // 5. LÀN KHÓI NGHI NGÚT (Steaming Hot Broth)
   const steamCount = 18;
   const steamParticles = [];
+  const steamCanvas = document.createElement('canvas');
+  steamCanvas.width = 64;
+  steamCanvas.height = 64;
+  const sctx = steamCanvas.getContext('2d');
+  const sgrad = sctx.createRadialGradient(32, 32, 0, 32, 32, 30);
+  sgrad.addColorStop(0, 'rgba(255, 255, 255, 0.35)');
+  sgrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.12)');
+  sgrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  sctx.fillStyle = sgrad;
+  sctx.fillRect(0, 0, 64, 64);
+  const steamTex = new THREE.CanvasTexture(steamCanvas);
+
   const steamMat = new THREE.SpriteMaterial({
     map: steamTex,
     color: 0xffffff,
     transparent: true,
-    opacity: 0.22,
+    opacity: 0.15,
     depthWrite: false,
   });
 
@@ -416,93 +583,44 @@ export function createPhoBowlModel({ skin = {} } = {}) {
 
   for (let i = 0; i < steamCount; i++) {
     const sprite = new THREE.Sprite(steamMat.clone());
-    const initRad = Math.random() * 0.10;
+    const initRad = Math.random() * 0.055;
     const initAngle = Math.random() * Math.PI * 2;
     sprite.position.set(
       Math.cos(initAngle) * initRad,
-      0.14 + Math.random() * 0.20,
+      sloshBaseY + 0.01 + Math.random() * 0.14,
       Math.sin(initAngle) * initRad
     );
-    const s = 0.05 + Math.random() * 0.05;
+    const s = 0.035 + Math.random() * 0.04;
     sprite.scale.set(s, s, s);
     steamGroup.add(sprite);
 
     steamParticles.push({
       sprite,
-      speedY: 0.18 + Math.random() * 0.2,
+      speedY: 0.14 + Math.random() * 0.16,
       wobbleSeed: Math.random() * 100,
     });
   }
 
-  // 6. ĐÔI BÀN TAY BƯNG TÔ PHỞ TỰ NHIÊN (Không còn là hình hộp "lỏ")
-  // Tay áo sơ mi trắng có viền gấu bo tròn, cổ tay da vàng tự nhiên và các ngón tay ôm trọn vành tô sứ
-  const handsGroup = new THREE.Group();
-  handsGroup.name = 'waiter-hands-natural';
+  // 6. ĐÔI BÀN TAY NGƯỜI PHỤC VỤ CHÂN THỰC 100% (Anatomical Human Hands & Extended Arms)
+  // Hai bàn tay người bưng bát thật - RÕ RÀNG BÀN TAY, CÁNH TAY NỐI DÀI RA KHỎI MÀN HÌNH:
+  // - Cánh tay áo sơ mi trắng xuất phát TỪ NGOÀI KHUNG HÌNH (Dưới góc trái/phải màn hình)
+  //   nối liền mạch liên tục vào cổ tay áo sơ mi và bàn tay bưng bát!
+  // - Ngón cái to rõ, tì phẳng tự nhiên trên vành miệng tô sứ, có móng tay hồng đào keratin bóng bẩy và vầng trăng khuyết hướng thẳng lên camera.
+  // - 4 ngón tay (trỏ, giữa, áp út, út) tách biệt rõ ràng, phân đốt uốn cong ôm chắc chắn đỡ dưới gờ mép tô sứ.
+  // - Mu bàn tay thon thả mềm mại chuẩn giải phẫu học, có 4 khớp xương ngón tay và gò mô ngón cái.
+  // - Cổ tay thon thả nối liền vào cổ áo sơ mi trắng có cúc ngọc trai.
+  // 6. ĐÔI BÀN TAY NGƯỜI PHỤC VỤ CHÂN THỰC 100% TỪ MODEL XBOT (Xbot Humanoid Hands)
+  // - 5 ngón tay chân thực từ model Xbot (chung bộ asset với game bơi)
+  // - Cánh tay áo sơ mi trắng nối dài xuyên suốt ra khỏi mép dưới màn hình
+  // - Phản xạ co giật cơ và ửng đỏ tự nhiên khi nước dùng sôi tràn mép
+  const waiterHands = createWaiterHands({ skin });
+  const handsGroup = waiterHands.root;
   root.add(handsGroup);
 
-  const handSkinMat = new THREE.MeshStandardMaterial({ color: 0xd4a373, roughness: 0.5, metalness: 0.02 });
-  const sleeveWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.75 });
-
-  function createArm(isLeft) {
-    const armGroup = new THREE.Group();
-    const sideSign = isLeft ? -1 : 1;
-    armGroup.position.set(sideSign * 0.235, 0.132, 0.0);
-
-    // Cẳng tay áo sơ mi trắng thuôn nhẹ
-    const sleeve = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.042, 0.052, 0.24, 16),
-      sleeveWhiteMat
-    );
-    sleeve.position.set(sideSign * 0.11, -0.07, -0.04);
-    sleeve.rotation.set(0.3, 0, -sideSign * 0.65);
-    armGroup.add(sleeve);
-
-    // Cổ tay da
-    const wrist = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.032, 0.08, 14), handSkinMat);
-    wrist.position.set(sideSign * 0.035, -0.02, -0.01);
-    wrist.rotation.set(0.2, 0, -sideSign * 0.4);
-    armGroup.add(wrist);
-
-    // Bàn tay bo tròn mềm mại
-    const palmGeo = new THREE.SphereGeometry(0.034, 14, 12);
-    palmGeo.scale(1.1, 0.65, 1.2);
-    const palm = new THREE.Mesh(palmGeo, handSkinMat);
-    palm.position.set(0, -0.01, 0);
-    armGroup.add(palm);
-
-    // Ngón tay cái (Thumb tì lên vành mép bát)
-    const thumbGeo = new THREE.CylinderGeometry(0.008, 0.009, 0.042, 10);
-    const thumb = new THREE.Mesh(thumbGeo, handSkinMat);
-    thumb.position.set(-sideSign * 0.012, 0.015, 0.01);
-    thumb.rotation.set(-0.2, 0, sideSign * 0.75);
-    armGroup.add(thumb);
-
-    // 4 ngón tay cong đỡ dưới đáy mép bát
-    for (let f = 0; f < 4; f++) {
-      const finger = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.006, 0.007, 0.045, 8),
-        handSkinMat
-      );
-      finger.position.set(
-        sideSign * (0.008 + f * 0.006),
-        -0.025,
-        -0.018 + f * 0.012
-      );
-      finger.rotation.set(0.4, 0, -sideSign * 0.3);
-      armGroup.add(finger);
-    }
-
-    return { armGroup, thumb };
-  }
-
-  const leftArm = createArm(true);
-  const rightArm = createArm(false);
-  handsGroup.add(leftArm.armGroup, rightArm.armGroup);
-
-  // 7. BẮN GIỌT CANH TRÀN
-  const dropletPoolSize = 24;
-  const dropletGeo = new THREE.SphereGeometry(0.011, 8, 8);
-  const dropletMat = new THREE.MeshBasicMaterial({ color: 0xd97706 });
+  // 7. BẮN GIỌT NƯỚC DÙNG KHI TRÀN MÉP
+  const dropletPoolSize = 28;
+  const dropletGeo = new THREE.SphereGeometry(0.0055, 8, 8);
+  const dropletMat = new THREE.MeshBasicMaterial({ color: 0x753410 });
   const dropletGroup = new THREE.Group();
   root.add(dropletGroup);
 
@@ -516,17 +634,21 @@ export function createPhoBowlModel({ skin = {} } = {}) {
 
   function spawnSpillDroplets(side, intensity) {
     let spawned = 0;
-    const targetSpawns = Math.ceil(intensity * 4);
+    const targetSpawns = Math.min(8, Math.ceil(intensity * 5));
     for (const d of droplets) {
       if (!d.active) {
         d.active = true;
         d.mesh.visible = true;
-        const rimX = side * 0.23;
-        d.mesh.position.set(rimX + (Math.random() - 0.5) * 0.04, 0.14, (Math.random() - 0.5) * 0.08);
-        d.vx = side * (0.8 + Math.random() * 1.3 * intensity);
-        d.vy = 0.5 + Math.random() * 0.7 * intensity;
-        d.vz = (Math.random() - 0.5) * 0.4;
-        d.life = 0.5;
+        const rimX = side * (baseSoupRadius + 0.008);
+        d.mesh.position.set(
+          rimX + (Math.random() - 0.5) * 0.02,
+          sloshBaseY + 0.012,
+          (Math.random() - 0.5) * 0.05
+        );
+        d.vx = side * (0.65 + Math.random() * 0.9 * intensity);
+        d.vy = 0.35 + Math.random() * 0.5 * intensity;
+        d.vz = (Math.random() - 0.5) * 0.3;
+        d.life = 0.42;
         spawned++;
         if (spawned >= targetSpawns) break;
       }
@@ -538,101 +660,151 @@ export function createPhoBowlModel({ skin = {} } = {}) {
     root.rotation.z = -physState.tiltRoll;
     root.rotation.x = physState.tiltPitch;
 
-    const volNorm = Math.max(0.1, physState.soupVolume / 100.0);
-    const targetSurfaceY = 0.035 + volNorm * 0.095;
+    // QUAN TRỌNG: Mực nước dùng hạ dần khi tràn, tuyệt đối không lòi đáy tô!
+    const volNorm = Math.max(0.0, Math.min(1.0, physState.soupVolume / 100.0));
+    const targetSurfaceY = 0.022 + volNorm * (sloshBaseY - 0.022);
     sloshMesh.position.y = targetSurfaceY;
-    noodlesGroup.position.y = (volNorm - 1.0) * 0.02;
 
-    const pos = sloshPosAttr;
+    // Bán kính đĩa nước TỰ ĐỘNG THU NHỎ chính xác theo độ côn thành trong tô sứ!
+    const bowlInnerR = getBowlInnerRadiusAt(targetSurfaceY);
+    const currentSoupRadius = Math.max(0.038, bowlInnerR - 0.004);
+    const scaleFactor = currentSoupRadius / baseSoupRadius;
+    sloshMesh.scale.set(scaleFactor, 1.0, scaleFactor);
+
+    // Lớp bánh phở hơi chìm nhẹ khi bát cạn nước
+    noodlesGroup.position.y = (volNorm - 1.0) * 0.003;
+
     const waveX = physState.waveX;
     const waveZ = physState.waveZ;
     const timeVal = physState.time;
 
+    // 8.1. BIẾN DẠNG BỀ MẶT NƯỚC DÙNG (Giới hạn biên độ tối đa 5mm)
+    const pos = sloshPosAttr;
     for (let i = 0; i < pos.count; i++) {
       const vx = pos.getX(i);
       const vz = pos.getZ(i);
       const r = Math.sqrt(vx * vx + vz * vz);
-      const sloshTilt = -waveX * vx + waveZ * vz;
-      const ripple = Math.sin(16.0 * r - timeVal * 8.0) * 0.0035 * (1.0 - r / soupRadius);
-      pos.setY(i, sloshTilt + ripple);
+      const normR = Math.min(1.0, r / baseSoupRadius);
+
+      const rawSloshSlope = -waveX * vx * 0.16 + waveZ * vz * 0.14;
+      const sloshSlope = Math.max(-0.005, Math.min(0.005, rawSloshSlope));
+      const ripple = Math.sin(18.0 * normR - timeVal * 9.5) * 0.0016 * (1.0 - normR * 0.5);
+      const gaitRipple = Math.cos(timeVal * 15.7) * (vx / baseSoupRadius) * 0.0010;
+
+      pos.setY(i, sloshSlope + ripple + gaitRipple);
     }
     pos.needsUpdate = true;
     sloshGeo.computeVertexNormals();
 
     const getFluidHeightAt = (x, z) => {
       const r = Math.sqrt(x * x + z * z);
-      const tiltH = -waveX * x + waveZ * z;
-      const rippleH = Math.sin(16.0 * r - timeVal * 8.0) * 0.0035;
-      return targetSurfaceY + tiltH + rippleH;
+      const normR = Math.min(1.0, r / baseSoupRadius);
+      const rawSloshSlope = -waveX * x * 0.16 + waveZ * z * 0.14;
+      const sloshSlope = Math.max(-0.005, Math.min(0.005, rawSloshSlope));
+      const ripple = Math.sin(18.0 * normR - timeVal * 9.5) * 0.0016 * (1.0 - normR * 0.5);
+      const gaitRipple = Math.cos(timeVal * 15.7) * (x / baseSoupRadius) * 0.0010;
+      return targetSurfaceY + sloshSlope + ripple + gaitRipple;
     };
 
+    // 8.2. VẬT LÝ NỔI VÀ TRÔI DẠT TOPPING
+    const fluidForceX = -waveX * 0.35;
+    const fluidForceZ = waveZ * 0.30;
+    const maxToppingRadius = currentSoupRadius - 0.016;
+
     meatballs.forEach((mb) => {
-      const driftX = mb.initX - waveX * 0.04;
-      const driftZ = mb.initZ + waveZ * 0.03;
-      mb.mesh.position.x = driftX;
-      mb.mesh.position.z = driftZ;
-      const waterH = getFluidHeightAt(driftX, driftZ);
-      const bob = Math.sin(timeVal * 4.5 + mb.seed) * 0.003;
-      mb.mesh.position.y = waterH - 0.005 + bob;
+      const pullX = (mb.anchorX - mb.x) * 4.5;
+      const pullZ = (mb.anchorZ - mb.z) * 4.5;
+      const ax = pullX + fluidForceX * 1.5;
+      const az = pullZ + fluidForceZ * 1.5;
+
+      mb.vx = (mb.vx + ax * dt) * 0.88;
+      mb.vz = (mb.vz + az * dt) * 0.88;
+      mb.x += mb.vx * dt;
+      mb.z += mb.vz * dt;
+
+      const r = Math.sqrt(mb.x * mb.x + mb.z * mb.z);
+      if (r > maxToppingRadius) {
+        const factor = maxToppingRadius / r;
+        mb.x *= factor;
+        mb.z *= factor;
+      }
+
+      const waterH = getFluidHeightAt(mb.x, mb.z);
+      const bob = Math.sin(timeVal * 5.0 + mb.seed) * 0.002;
+      mb.group.position.set(mb.x, Math.max(0.026, waterH - 0.002 + bob), mb.z);
+      mb.group.rotation.z = -waveX * 0.4;
+      mb.group.rotation.x = waveZ * 0.4;
     });
 
-    flank1.position.y = getFluidHeightAt(flank1.position.x, flank1.position.z) + 0.002;
-    flank2.position.y = getFluidHeightAt(flank2.position.x, flank2.position.z) + 0.002;
-    eggGroup.position.y = getFluidHeightAt(eggGroup.position.x, eggGroup.position.z);
+    flank1.position.y = Math.max(0.024, getFluidHeightAt(flank1.position.x, flank1.position.z) + 0.0016);
+    flank1.rotation.z = 0.08 - waveX * 0.45;
+    flank1.rotation.x = -0.04 + waveZ * 0.45;
+
+    flank2.position.y = Math.max(0.025, getFluidHeightAt(flank2.position.x, flank2.position.z) + 0.0016);
+    flank2.rotation.z = 0.12 - waveX * 0.45;
+    flank2.rotation.x = 0.06 + waveZ * 0.45;
+
+    flank3.position.y = Math.max(0.026, getFluidHeightAt(flank3.position.x, flank3.position.z) + 0.0016);
+    flank3.rotation.z = 0.06 - waveX * 0.45;
+    flank3.rotation.x = 0.10 + waveZ * 0.45;
+
+    const eggPullX = (eggState.anchorX - eggState.x) * 5.0;
+    const eggPullZ = (eggState.anchorZ - eggState.z) * 5.0;
+    eggState.vx = (eggState.vx + (eggPullX + fluidForceX * 1.0) * dt) * 0.86;
+    eggState.vz = (eggState.vz + (eggPullZ + fluidForceZ * 1.0) * dt) * 0.86;
+    eggState.x += eggState.vx * dt;
+    eggState.z += eggState.vz * dt;
+    const eggH = getFluidHeightAt(eggState.x, eggState.z);
+    eggGroup.position.set(eggState.x, Math.max(0.024, eggH + 0.001), eggState.z);
+    eggGroup.rotation.z = -waveX * 0.45;
+    eggGroup.rotation.x = waveZ * 0.45;
 
     onionRings.forEach((ring) => {
-      ring.mesh.position.y = getFluidHeightAt(ring.mesh.position.x, ring.mesh.position.z) + 0.002;
-      ring.mesh.rotation.z = -waveX * 0.8;
-      ring.mesh.rotation.x = waveZ * 0.8;
+      const rx = ring.anchorX - waveX * 0.012;
+      const rz = ring.anchorZ + waveZ * 0.010;
+      ring.mesh.position.set(rx, Math.max(0.023, getFluidHeightAt(rx, rz) + 0.0014), rz);
+      ring.mesh.rotation.z = -waveX * 0.5;
+      ring.mesh.rotation.x = waveZ * 0.5;
     });
 
     scallions.forEach((sc) => {
-      sc.mesh.position.y = getFluidHeightAt(sc.mesh.position.x, sc.mesh.position.z) + 0.001;
+      const sx = sc.anchorX - waveX * 0.008;
+      const sz = sc.anchorZ + waveZ * 0.008;
+      sc.mesh.position.set(sx, Math.max(0.022, getFluidHeightAt(sx, sz) + 0.0012), sz);
     });
 
-    fatDrops.forEach((fd) => {
-      const fx = fd.initX - waveX * 0.035;
-      const fz = fd.initZ + waveZ * 0.035;
-      fd.mesh.position.set(fx, getFluidHeightAt(fx, fz) + 0.001, fz);
-    });
+    stem1.position.y = Math.max(0.024, getFluidHeightAt(stem1.position.x, stem1.position.z) + 0.002);
+    stem2.position.y = Math.max(0.024, getFluidHeightAt(stem2.position.x, stem2.position.z) + 0.002);
 
-    // Bàn tay phản xạ bỏng
-    if (physState.scaldTimer > 0) {
-      leftArm.thumb.material.color.setHex(0xef4444);
-      rightArm.thumb.material.color.setHex(0xef4444);
-      leftArm.armGroup.position.y = 0.132 + Math.sin(timeVal * 40.0) * 0.015;
-    } else {
-      leftArm.thumb.material.color.setHex(0xd4a373);
-      rightArm.thumb.material.color.setHex(0xd4a373);
-      leftArm.armGroup.position.y = 0.132;
-    }
+    // 8.3. BÀN TAY PHẢN XẠ BỎNG (Scald Reflex) & CẬP NHẬT CÁNH TAY
+    waiterHands.update(physState, dt);
 
-    // Làn khói
+    // 8.4. LÀN KHÓI NGHI NGÚT
     const isBlowing = physState.isBlowing;
     steamParticles.forEach((p) => {
       p.sprite.position.y += p.speedY * dt;
       if (isBlowing) {
-        p.sprite.position.z += 1.0 * dt;
-        p.sprite.material.opacity = Math.max(0, p.sprite.material.opacity - 1.5 * dt);
+        p.sprite.position.z += 0.75 * dt;
+        p.sprite.material.opacity = Math.max(0, p.sprite.material.opacity - 1.6 * dt);
       } else {
-        const wobble = Math.sin(timeVal * 3.0 + p.wobbleSeed) * 0.02 * dt;
+        const wobble = Math.sin(timeVal * 3.2 + p.wobbleSeed) * 0.015 * dt;
         p.sprite.position.x += wobble;
         p.sprite.position.z += wobble * 0.5;
       }
 
-      if (p.sprite.position.y > 0.42 || p.sprite.material.opacity <= 0.02) {
-        const initRad = Math.random() * 0.10;
+      if (p.sprite.position.y > 0.32 || p.sprite.material.opacity <= 0.02) {
+        const initRad = Math.random() * 0.055;
         const initAngle = Math.random() * Math.PI * 2;
         p.sprite.position.set(
           Math.cos(initAngle) * initRad,
-          targetSurfaceY + 0.015,
+          targetSurfaceY + 0.01,
           Math.sin(initAngle) * initRad
         );
-        p.sprite.material.opacity = 0.20 + Math.random() * 0.15;
+        p.sprite.material.opacity = 0.15 + Math.random() * 0.12;
       }
     });
 
-    // Giọt canh rơi
+    // 8.5. GIỌT CANH RƠI
     if (physState.spillIntensity > 0) {
       spawnSpillDroplets(physState.spillSide, physState.spillIntensity);
     }
@@ -654,7 +826,11 @@ export function createPhoBowlModel({ skin = {} } = {}) {
 
   function setSkin(skinData) {
     if (skinData.bowlColor) bowlMat.color.setHex(skinData.bowlColor);
-    if (skinData.soupColor) sloshMat.color.setHex(skinData.soupColor);
+    if (skinData.rimColor) {
+      rimLineMat.color.setHex(skinData.rimColor);
+      rimLineSub.material.color.setHex(skinData.rimColor);
+    }
+    waiterHands.setSkin(skinData);
   }
 
   return {
