@@ -190,9 +190,9 @@ export function createWaiterHands({ skin = {} } = {}) {
       const L1 = S.distanceTo(E0);
       const L2 = E0.distanceTo(W0);
 
-      // Điểm cổ tay hạ thấp vừa vặn ôm thân ngoài vành bát sứ:
-      // x = sign * 0.126m, y = 0.015m, z = -0.020m (không còn bị nhô cao quá miệng bát)
-      const localTargetInBowl = new THREE.Vector3(sign * 0.126, 0.015, -0.020);
+      // Điểm cổ tay hạ thấp và mở rộng ra 2 bên ôm vừa vặn vành tô:
+      // x = sign * 0.148m (mở rộng sang 2 bên sườn), y = 0.010m, z = -0.020m
+      const localTargetInBowl = new THREE.Vector3(sign * 0.148, 0.010, -0.020);
       const targetWorld = localTargetInBowl.clone();
       bowlMeshRoot.localToWorld(targetWorld);
 
@@ -241,9 +241,9 @@ export function createWaiterHands({ skin = {} } = {}) {
       const t1 = getBone(prefix + 'HandThumb1');
       const t2 = getBone(prefix + 'HandThumb2');
       const t3 = getBone(prefix + 'HandThumb3');
-      if (t1) t1.rotation.set(-0.25, -sign * 0.40, sign * 0.15);
-      if (t2) t2.rotation.z = sign * 0.15;
-      if (t3) t3.rotation.z = -sign * 0.10;
+      if (t1) t1.rotation.set(-0.35, -sign * 0.45, sign * 0.20);
+      if (t2) t2.rotation.z = sign * 0.20;
+      if (t3) t3.rotation.z = -sign * 0.15;
     }
 
     solveLimb(true);
