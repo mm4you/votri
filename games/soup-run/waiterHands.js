@@ -5,12 +5,12 @@
  *    - Toàn bộ cánh tay (vai, bắp tay, cẳng tay, cổ tay, bàn tay, 5 ngón tay) là một dải lưới liền mạch.
  *    - Tuyệt đối không ghép nối hình trụ, không có bất kỳ khe hở hay đứt đoạn nào.
  * 2. Tư thế bưng phở chuẩn xác trên mọi góc nhìn (Desktop & Mobile):
- *    - Hai bàn tay bám chắc 2 bên vành tô sứ (không quay lòng bàn tay về phía camera).
- *    - Ngón cái tì phẳng tự nhiên trên mặt vành tô sứ khớp chính xác vành miệng bát.
+ *    - Hai bàn tay hạ vừa vặn bám chắc hai bên thân tô sứ (không bị giơ quá cao lên trời).
+ *    - Ngón cái tì phẳng xuôi tự nhiên dọc theo mặt phẳng vành tô sứ (không chỉa thẳng đứng).
  *    - 4 ngón tay uốn cong đỡ vững vàng dưới đáy gờ mép bát.
  *    - Cánh tay áo sơ mi trắng muốt nối dài liền mạch từ cổ tay xuyên suốt ra ngoài hai góc màn hình.
- * 3. Phản ứng bỏng nước sôi (Scald Heat Glow):
- *    - Khi nước phở sôi tràn trúng ngón tay, da tay ửng đỏ rát bỏng tự nhiên và giật nảy cơ tinh tế.
+ * 3. Phản ứng bỏng nước sôi chuẩn hướng (Scald Heat Glow):
+ *    - Tô nghiêng bên nào (trái/phải), nước sôi tràn đúng bên đó thì chính xác bàn tay bên đó ửng đỏ và giật nảy cơ.
  */
 
 import * as THREE from '../../shared/vendor/three.module.js';
@@ -80,11 +80,14 @@ export function createWaiterHands({ skin = {} } = {}) {
   // Màu da ửng đỏ rát bỏng khi nước sôi tràn trúng ngón tay
   vec3 skinBurn = vec3(0.92, 0.22, 0.16);
 
+  // Khớp chính xác bên bị bỏng:
+  // uScaldSide < 0: Nghiêng trái -> Bỏng tay trái màn hình (Xbot RightArm: vRestPos.x < 0)
+  // uScaldSide > 0: Nghiêng phải -> Bỏng tay phải màn hình (Xbot LeftArm: vRestPos.x > 0)
   float sideMatch = 1.0;
   if (uScaldSide < -0.5) {
-    sideMatch = step(0.0, vRestPos.x);
-  } else if (uScaldSide > 0.5) {
     sideMatch = step(vRestPos.x, 0.0);
+  } else if (uScaldSide > 0.5) {
+    sideMatch = step(0.0, vRestPos.x);
   }
 
   vec3 skinFinal = mix(skinBase, skinBurn, clamp(uScaldIntensity * 0.90 * sideMatch, 0.0, 1.0));
@@ -112,16 +115,16 @@ export function createWaiterHands({ skin = {} } = {}) {
   let leftForeArmBone = null;
   let rightForeArmBone = null;
 
-  // Hướng xoay bàn tay chuẩn bưng bát trong hệ tọa độ bát:
+  // Hướng xoay bàn tay chuẩn ôm sát vành tô và hạ thấp ngón cái phẳng theo mép bát:
   // Tay trái (bên phải góc nhìn):
-  const leftFwd = new THREE.Vector3(-0.15, -0.05, 0.98).normalize();
-  const leftBack = new THREE.Vector3(0.98, 0.15, 0.0).normalize();
+  const leftFwd = new THREE.Vector3(-0.25, 0.08, 0.96).normalize();
+  const leftBack = new THREE.Vector3(0.96, 0.15, 0.20).normalize();
   const leftThumb = new THREE.Vector3().crossVectors(leftFwd, leftBack).normalize();
   const leftGripQuat = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(leftFwd, leftBack, leftThumb));
 
   // Tay phải (bên trái góc nhìn):
-  const rightFwd = new THREE.Vector3(0.15, 0.05, -0.98).normalize();
-  const rightBack = new THREE.Vector3(-0.98, 0.15, 0.0).normalize();
+  const rightFwd = new THREE.Vector3(0.25, -0.08, -0.96).normalize();
+  const rightBack = new THREE.Vector3(-0.96, 0.15, -0.20).normalize();
   const rightThumb = new THREE.Vector3().crossVectors(rightFwd, rightBack).normalize();
   const rightGripQuat = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(rightFwd, rightBack, rightThumb));
 
@@ -187,9 +190,9 @@ export function createWaiterHands({ skin = {} } = {}) {
       const L1 = S.distanceTo(E0);
       const L2 = E0.distanceTo(W0);
 
-      // Điểm cổ tay ôm sát mép ngoài vành tô sứ trong hệ tọa độ bát:
-      // Bán kính miệng bát R=0.125m, cổ tay ở x = sign * 0.138m, y = 0.075m, z = -0.010m
-      const localTargetInBowl = new THREE.Vector3(sign * 0.138, 0.075, -0.010);
+      // Điểm cổ tay hạ thấp vừa vặn ôm thân ngoài vành bát sứ:
+      // x = sign * 0.126m, y = 0.015m, z = -0.020m (không còn bị nhô cao quá miệng bát)
+      const localTargetInBowl = new THREE.Vector3(sign * 0.126, 0.015, -0.020);
       const targetWorld = localTargetInBowl.clone();
       bowlMeshRoot.localToWorld(targetWorld);
 
@@ -224,23 +227,23 @@ export function createWaiterHands({ skin = {} } = {}) {
       const parentHandQuat = foreArm.getWorldQuaternion(new THREE.Quaternion());
       hand.quaternion.copy(parentHandQuat.clone().invert().multiply(targetHandWorldQuat));
 
-      // 4 ngón tay uốn cong đỡ vững vàng dưới gờ mép bát
+      // 4 ngón tay uốn cong ôm gọn dưới gờ mép tô sứ
       ['Index', 'Middle', 'Ring', 'Pinky'].forEach((f) => {
         const b1 = getBone(prefix + 'Hand' + f + '1');
         const b2 = getBone(prefix + 'Hand' + f + '2');
         const b3 = getBone(prefix + 'Hand' + f + '3');
-        if (b1) b1.rotation.z = -sign * 0.65;
-        if (b2) b2.rotation.z = -sign * 0.75;
-        if (b3) b3.rotation.z = -sign * 0.55;
+        if (b1) b1.rotation.z = -sign * 0.70;
+        if (b2) b2.rotation.z = -sign * 0.80;
+        if (b3) b3.rotation.z = -sign * 0.60;
       });
 
-      // Ngón cái tì phẳng tự nhiên trên mặt vành tô sứ
+      // Ngón cái tì phẳng xuôi tự nhiên theo mặt vành miệng tô (không chỉa thẳng đứng)
       const t1 = getBone(prefix + 'HandThumb1');
       const t2 = getBone(prefix + 'HandThumb2');
       const t3 = getBone(prefix + 'HandThumb3');
-      if (t1) t1.rotation.set(0.12, -sign * 0.30, sign * 0.25);
-      if (t2) t2.rotation.z = sign * 0.20;
-      if (t3) t3.rotation.z = -sign * 0.15;
+      if (t1) t1.rotation.set(-0.25, -sign * 0.40, sign * 0.15);
+      if (t2) t2.rotation.z = sign * 0.15;
+      if (t3) t3.rotation.z = -sign * 0.10;
     }
 
     solveLimb(true);
@@ -265,10 +268,12 @@ export function createWaiterHands({ skin = {} } = {}) {
       const intensity = Math.min(1.0, scaldTimer / 0.85);
       uniforms.uScaldIntensity.value = intensity;
 
-      // Phản xạ giật nảy cơ tay khi bỏng nước sôi
+      // Phản xạ giật nảy cơ tay khi bỏng nước sôi đúng bên bị tràn:
+      // uScaldSide < 0: Bỏng tay trái màn hình (rightHandBone)
+      // uScaldSide > 0: Bỏng tay phải màn hình (leftHandBone)
       const flinchAmp = Math.sin(physState.time * 38.0) * 0.008 * intensity;
-      if (leftHandBone && uniforms.uScaldSide.value <= 0) leftHandBone.position.y += flinchAmp;
-      if (rightHandBone && uniforms.uScaldSide.value >= 0) rightHandBone.position.y += flinchAmp;
+      if (rightHandBone && uniforms.uScaldSide.value < 0) rightHandBone.position.y += flinchAmp;
+      if (leftHandBone && uniforms.uScaldSide.value > 0) leftHandBone.position.y += flinchAmp;
     } else {
       uniforms.uScaldIntensity.value = 0.0;
     }
